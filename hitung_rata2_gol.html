@@ -1,80 +1,120 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rata-rata GF & GA</title>
-<style>
-body{font-family:sans-serif;margin:20px;background:#f8fafc;color:#0f172a}
-input,textarea{width:100%;padding:6px;margin:4px 0;border-radius:4px;border:1px solid #aaa}
-button{padding:8px 12px;margin:5px;border:none;border-radius:6px;background:#0ea5a4;color:#fff;cursor:pointer}
-table{border-collapse:collapse;width:100%;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Gol & Kebobolan</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        h2 { color: #333; }
+        table { width: 100%; max-width: 600px; border-collapse: collapse; margin-bottom: 20px; }
+        table, th, td { border: 1px solid #999; }
+        th, td { padding: 8px; text-align: center; }
+        input[type="number"] { width: 60px; }
+        button { padding: 8px 16px; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+        .result { font-weight: bold; margin-top: 10px; }
+    </style>
 </head>
 <body>
-<h1>Rata-rata Gol & Kebobolan</h1>
 
-<h3>Performa Tim</h3>
-<label>Tim A (format: gf-ga, gf-ga,...)</label>
-<textarea id="formA" rows="2">2-1,1-0,0-0,3-1</textarea>
-<label>Tim B</label>
-<textarea id="formB" rows="2">1-1,2-1,1-2,0-1</textarea>
-
-<h3>H2H</h3>
-<label>H2H (format: yyyy-mm-dd|a-b atau a-b)</label>
-<textarea id="h2h" rows="2">2025-05-02|2-1,2024-09-10|1-1,2023-11-14|0-2</textarea>
-
-<button id="calc">Hitung Rata-rata</button>
-
-<div id="results" style="margin-top:20px"></div>
-
-<script>
-// Utility parsing
-function parseScores(txt){
-    return txt.split(',').map(s=>s.trim()).filter(Boolean)
-        .map(p=>{
-            const m=p.match(/(\d+)\s*-\s*(\d+)/);
-            return m?{gf:+m[1],ga:+m[2]}:null;
-        }).filter(Boolean);
-}
-function mean(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0; }
-
-document.getElementById('calc').addEventListener('click',()=>{
-    // Form Tim
-    const formA=parseScores(document.getElementById('formA').value);
-    const formB=parseScores(document.getElementById('formB').value);
-    const avgA_GF=mean(formA.map(m=>m.gf)), avgA_GA=mean(formA.map(m=>m.ga));
-    const avgB_GF=mean(formB.map(m=>m.gf)), avgB_GA=mean(formB.map(m=>m.ga));
-
-    // H2H
-    const h2hTxt=document.getElementById('h2h').value;
-    const h2hArr=h2hTxt.split(',').map(s=>s.trim()).filter(Boolean);
-    let hA=[], hB=[];
-    h2hArr.forEach(p=>{
-        let m=p.match(/(\d{4}-\d{2}-\d{2})\|?(\d+)-(\d+)/);
-        if(m){ hA.push(+m[2]); hB.push(+m[3]); }
-        else{ const n=p.match(/(\d+)-(\d+)/); if(n){ hA.push(+n[1]); hB.push(+n[2]); } }
-    });
-    const avgH_GF_A=mean(hA), avgH_GA_A=mean(hB);
-    const avgH_GF_B=mean(hB), avgH_GA_B=mean(hA);
-
-    // Output
-    document.getElementById('results').innerHTML=`
-    <h3>Rata-rata Performa Tim</h3>
-    <table>
-        <tr><th>Tim</th><th>GF</th><th>GA</th></tr>
-        <tr><td>Tim A</td><td>${avgA_GF.toFixed(2)}</td><td>${avgA_GA.toFixed(2)}</td></tr>
-        <tr><td>Tim B</td><td>${avgB_GF.toFixed(2)}</td><td>${avgB_GA.toFixed(2)}</td></tr>
+    <h2>Performa Tim (Gol & Kebobolan)</h2>
+    <table id="teamTable">
+        <thead>
+            <tr>
+                <th>Gol</th>
+                <th>Kebobolan</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="number" class="gol" value="0"></td>
+                <td><input type="number" class="kebobolan" value="0"></td>
+            </tr>
+            <tr>
+                <td><input type="number" class="gol" value="0"></td>
+                <td><input type="number" class="kebobolan" value="0"></td>
+            </tr>
+        </tbody>
     </table>
-    <h3>Rata-rata H2H</h3>
-    <table>
-        <tr><th>Tim</th><th>GF</th><th>GA</th></tr>
-        <tr><td>Tim A</td><td>${avgH_GF_A.toFixed(2)}</td><td>${avgH_GA_A.toFixed(2)}</td></tr>
-        <tr><td>Tim B</td><td>${avgH_GF_B.toFixed(2)}</td><td>${avgH_GA_B.toFixed(2)}</td></tr>
+    <button onclick="tambahBarisPerforma()">Tambah Baris Performa</button>
+
+    <h2>H2H (Gol Tim 1 & Tim 2)</h2>
+    <table id="h2hTable">
+        <thead>
+            <tr>
+                <th>Gol Tim 1</th>
+                <th>Gol Tim 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="number" class="gol1" value="0"></td>
+                <td><input type="number" class="gol2" value="0"></td>
+            </tr>
+            <tr>
+                <td><input type="number" class="gol1" value="0"></td>
+                <td><input type="number" class="gol2" value="0"></td>
+            </tr>
+        </tbody>
     </table>
-    `;
-});
-</script>
+    <button onclick="tambahBarisH2H()">Tambah Baris H2H</button>
+
+    <h2>Hasil Rata-rata</h2>
+    <button onclick="hitungSemua()">Hitung Semua</button>
+    <div class="result" id="hasilSemua"></div>
+
+    <script>
+        // Tambah baris Performa
+        function tambahBarisPerforma() {
+            const table = document.getElementById('teamTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.insertCell(0).innerHTML = '<input type="number" class="gol" value="0">';
+            newRow.insertCell(1).innerHTML = '<input type="number" class="kebobolan" value="0">';
+        }
+
+        // Tambah baris H2H
+        function tambahBarisH2H() {
+            const table = document.getElementById('h2hTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.insertCell(0).innerHTML = '<input type="number" class="gol1" value="0">';
+            newRow.insertCell(1).innerHTML = '<input type="number" class="gol2" value="0">';
+        }
+
+        // Hitung Semua
+        function hitungSemua() {
+            // Performa Tim
+            const gol = document.querySelectorAll('.gol');
+            const kebobolan = document.querySelectorAll('.kebobolan');
+            let totalGol = 0, totalKebobolan = 0;
+            let countPerforma = gol.length;
+
+            gol.forEach((g,i) => {
+                totalGol += parseInt(g.value) || 0;
+                totalKebobolan += parseInt(kebobolan[i].value) || 0;
+            });
+
+            const avgGol = (totalGol / countPerforma).toFixed(2);
+            const avgKebobolan = (totalKebobolan / countPerforma).toFixed(2);
+
+            // H2H
+            const gol1 = document.querySelectorAll('.gol1');
+            const gol2 = document.querySelectorAll('.gol2');
+            let totalGol1 = 0, totalGol2 = 0;
+            let countH2H = gol1.length;
+
+            gol1.forEach((g,i) => {
+                totalGol1 += parseInt(g.value) || 0;
+                totalGol2 += parseInt(gol2[i].value) || 0;
+            });
+
+            const avgGol1 = (totalGol1 / countH2H).toFixed(2);
+            const avgGol2 = (totalGol2 / countH2H).toFixed(2);
+
+            document.getElementById('hasilSemua').innerText =
+                `Performa Tim: Rata-rata Gol = ${avgGol}, Rata-rata Kebobolan = ${avgKebobolan}\n` +
+                `H2H: Rata-rata Gol Tim 1 = ${avgGol1}, Rata-rata Gol Tim 2 = ${avgGol2}`;
+        }
+    </script>
+
 </body>
-</html>
+                                                                    </html>
