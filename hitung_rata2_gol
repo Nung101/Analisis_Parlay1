@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rata-rata GF & GA</title>
+<style>
+body{font-family:sans-serif;margin:20px;background:#f8fafc;color:#0f172a}
+input,textarea{width:100%;padding:6px;margin:4px 0;border-radius:4px;border:1px solid #aaa}
+button{padding:8px 12px;margin:5px;border:none;border-radius:6px;background:#0ea5a4;color:#fff;cursor:pointer}
+table{border-collapse:collapse;width:100%;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+</style>
+</head>
+<body>
+<h1>Rata-rata Gol & Kebobolan</h1>
+
+<h3>Performa Tim</h3>
+<label>Tim A (format: gf-ga, gf-ga,...)</label>
+<textarea id="formA" rows="2">2-1,1-0,0-0,3-1</textarea>
+<label>Tim B</label>
+<textarea id="formB" rows="2">1-1,2-1,1-2,0-1</textarea>
+
+<h3>H2H</h3>
+<label>H2H (format: yyyy-mm-dd|a-b atau a-b)</label>
+<textarea id="h2h" rows="2">2025-05-02|2-1,2024-09-10|1-1,2023-11-14|0-2</textarea>
+
+<button id="calc">Hitung Rata-rata</button>
+
+<div id="results" style="margin-top:20px"></div>
+
+<script>
+// Utility parsing
+function parseScores(txt){
+    return txt.split(',').map(s=>s.trim()).filter(Boolean)
+        .map(p=>{
+            const m=p.match(/(\d+)\s*-\s*(\d+)/);
+            return m?{gf:+m[1],ga:+m[2]}:null;
+        }).filter(Boolean);
+}
+function mean(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0; }
+
+document.getElementById('calc').addEventListener('click',()=>{
+    // Form Tim
+    const formA=parseScores(document.getElementById('formA').value);
+    const formB=parseScores(document.getElementById('formB').value);
+    const avgA_GF=mean(formA.map(m=>m.gf)), avgA_GA=mean(formA.map(m=>m.ga));
+    const avgB_GF=mean(formB.map(m=>m.gf)), avgB_GA=mean(formB.map(m=>m.ga));
+
+    // H2H
+    const h2hTxt=document.getElementById('h2h').value;
+    const h2hArr=h2hTxt.split(',').map(s=>s.trim()).filter(Boolean);
+    let hA=[], hB=[];
+    h2hArr.forEach(p=>{
+        let m=p.match(/(\d{4}-\d{2}-\d{2})\|?(\d+)-(\d+)/);
+        if(m){ hA.push(+m[2]); hB.push(+m[3]); }
+        else{ const n=p.match(/(\d+)-(\d+)/); if(n){ hA.push(+n[1]); hB.push(+n[2]); } }
+    });
+    const avgH_GF_A=mean(hA), avgH_GA_A=mean(hB);
+    const avgH_GF_B=mean(hB), avgH_GA_B=mean(hA);
+
+    // Output
+    document.getElementById('results').innerHTML=`
+    <h3>Rata-rata Performa Tim</h3>
+    <table>
+        <tr><th>Tim</th><th>GF</th><th>GA</th></tr>
+        <tr><td>Tim A</td><td>${avgA_GF.toFixed(2)}</td><td>${avgA_GA.toFixed(2)}</td></tr>
+        <tr><td>Tim B</td><td>${avgB_GF.toFixed(2)}</td><td>${avgB_GA.toFixed(2)}</td></tr>
+    </table>
+    <h3>Rata-rata H2H</h3>
+    <table>
+        <tr><th>Tim</th><th>GF</th><th>GA</th></tr>
+        <tr><td>Tim A</td><td>${avgH_GF_A.toFixed(2)}</td><td>${avgH_GA_A.toFixed(2)}</td></tr>
+        <tr><td>Tim B</td><td>${avgH_GF_B.toFixed(2)}</td><td>${avgH_GA_B.toFixed(2)}</td></tr>
+    </table>
+    `;
+});
+</script>
+</body>
+</html>
