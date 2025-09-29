@@ -1,120 +1,82 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisis Gol & Kebobolan</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-        h2 { color: #333; }
-        table { width: 100%; max-width: 600px; border-collapse: collapse; margin-bottom: 20px; }
-        table, th, td { border: 1px solid #999; }
-        th, td { padding: 8px; text-align: center; }
-        input[type="number"] { width: 60px; }
-        button { padding: 8px 16px; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
-        .result { font-weight: bold; margin-top: 10px; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalkulator Rata-rata Gol & Kebobolan</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 15px; background: #f9f9f9; }
+  h2 { text-align: center; }
+  .box { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
+  input { width: 60px; padding: 5px; text-align: center; }
+  button { margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; background: #007bff; color: white; cursor: pointer; }
+  button:hover { background: #0056b3; }
+  .hasil { margin-top: 10px; font-weight: bold; }
+</style>
 </head>
 <body>
 
-    <h2>Performa Tim (Gol & Kebobolan)</h2>
-    <table id="teamTable">
-        <thead>
-            <tr>
-                <th>Gol</th>
-                <th>Kebobolan</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="number" class="gol" value="0"></td>
-                <td><input type="number" class="kebobolan" value="0"></td>
-            </tr>
-            <tr>
-                <td><input type="number" class="gol" value="0"></td>
-                <td><input type="number" class="kebobolan" value="0"></td>
-            </tr>
-        </tbody>
-    </table>
-    <button onclick="tambahBarisPerforma()">Tambah Baris Performa</button>
+<h2>⚽ Kalkulator Rata-rata Gol & Kebobolan</h2>
 
-    <h2>H2H (Gol Tim 1 & Tim 2)</h2>
-    <table id="h2hTable">
-        <thead>
-            <tr>
-                <th>Gol Tim 1</th>
-                <th>Gol Tim 2</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="number" class="gol1" value="0"></td>
-                <td><input type="number" class="gol2" value="0"></td>
-            </tr>
-            <tr>
-                <td><input type="number" class="gol1" value="0"></td>
-                <td><input type="number" class="gol2" value="0"></td>
-            </tr>
-        </tbody>
-    </table>
-    <button onclick="tambahBarisH2H()">Tambah Baris H2H</button>
+<div class="box">
+  <h3>Performa Tim</h3>
+  <table id="tabelPerforma">
+    <tr><th>Pertandingan</th><th>Gol Cetak</th><th>Gol Kebobolan</th></tr>
+    <tr><td>1</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td></tr>
+  </table>
+  <button onclick="tambahBaris('tabelPerforma')">+ Tambah Pertandingan</button>
+  <button onclick="hitung('tabelPerforma','hasilPerforma')">Hitung</button>
+  <div class="hasil" id="hasilPerforma"></div>
+</div>
 
-    <h2>Hasil Rata-rata</h2>
-    <button onclick="hitungSemua()">Hitung Semua</button>
-    <div class="result" id="hasilSemua"></div>
+<div class="box">
+  <h3>Head to Head (H2H)</h3>
+  <table id="tabelH2H">
+    <tr><th>Pertemuan</th><th>Gol Tim A</th><th>Gol Tim B</th></tr>
+    <tr><td>1</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td></tr>
+  </table>
+  <button onclick="tambahBaris('tabelH2H')">+ Tambah Pertemuan</button>
+  <button onclick="hitung('tabelH2H','hasilH2H', true)">Hitung</button>
+  <div class="hasil" id="hasilH2H"></div>
+</div>
 
-    <script>
-        // Tambah baris Performa
-        function tambahBarisPerforma() {
-            const table = document.getElementById('teamTable').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
-            newRow.insertCell(0).innerHTML = '<input type="number" class="gol" value="0">';
-            newRow.insertCell(1).innerHTML = '<input type="number" class="kebobolan" value="0">';
-        }
+<script>
+function tambahBaris(id) {
+  let table = document.getElementById(id);
+  let rowCount = table.rows.length;
+  let row = table.insertRow();
+  row.insertCell(0).innerText = rowCount;
+  row.insertCell(1).innerHTML = "<input type='number' value='0'>";
+  row.insertCell(2).innerHTML = "<input type='number' value='0'>";
+}
 
-        // Tambah baris H2H
-        function tambahBarisH2H() {
-            const table = document.getElementById('h2hTable').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
-            newRow.insertCell(0).innerHTML = '<input type="number" class="gol1" value="0">';
-            newRow.insertCell(1).innerHTML = '<input type="number" class="gol2" value="0">';
-        }
+function hitung(tableId, hasilId, h2h=false) {
+  let table = document.getElementById(tableId);
+  let totalCetak = 0, totalKebobolan = 0, count = 0;
 
-        // Hitung Semua
-        function hitungSemua() {
-            // Performa Tim
-            const gol = document.querySelectorAll('.gol');
-            const kebobolan = document.querySelectorAll('.kebobolan');
-            let totalGol = 0, totalKebobolan = 0;
-            let countPerforma = gol.length;
+  for (let i=1; i<table.rows.length; i++) {
+    let gol1 = parseFloat(table.rows[i].cells[1].children[0].value) || 0;
+    let gol2 = parseFloat(table.rows[i].cells[2].children[0].value) || 0;
+    if(h2h) { 
+      totalCetak += gol1; 
+      totalKebobolan += gol2;
+    } else {
+      totalCetak += gol1;
+      totalKebobolan += gol2;
+    }
+    count++;
+  }
 
-            gol.forEach((g,i) => {
-                totalGol += parseInt(g.value) || 0;
-                totalKebobolan += parseInt(kebobolan[i].value) || 0;
-            });
+  let rataCetak = (count>0)? (totalCetak/count).toFixed(2):0;
+  let rataKebobolan = (count>0)? (totalKebobolan/count).toFixed(2):0;
 
-            const avgGol = (totalGol / countPerforma).toFixed(2);
-            const avgKebobolan = (totalKebobolan / countPerforma).toFixed(2);
-
-            // H2H
-            const gol1 = document.querySelectorAll('.gol1');
-            const gol2 = document.querySelectorAll('.gol2');
-            let totalGol1 = 0, totalGol2 = 0;
-            let countH2H = gol1.length;
-
-            gol1.forEach((g,i) => {
-                totalGol1 += parseInt(g.value) || 0;
-                totalGol2 += parseInt(gol2[i].value) || 0;
-            });
-
-            const avgGol1 = (totalGol1 / countH2H).toFixed(2);
-            const avgGol2 = (totalGol2 / countH2H).toFixed(2);
-
-            document.getElementById('hasilSemua').innerText =
-                `Performa Tim: Rata-rata Gol = ${avgGol}, Rata-rata Kebobolan = ${avgKebobolan}\n` +
-                `H2H: Rata-rata Gol Tim 1 = ${avgGol1}, Rata-rata Gol Tim 2 = ${avgGol2}`;
-        }
-    </script>
+  document.getElementById(hasilId).innerText =
+    "Rata Gol Cetak: " + rataCetak + " | Rata Kebobolan: " + rataKebobolan;
+}
+</script>
 
 </body>
-                                                                    </html>
+</html>
+            
