@@ -1,227 +1,56 @@
-<!doctype html>
-<html lang="id">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ADI Calculator — Attack / Defense Index</title>
+  <meta charset="UTF-8">
+  <title>Calculator ADI</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:#f7fafc; color:#0f1724; padding:18px}
-    .wrap{max-width:840px;margin:12px auto;background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 24px rgba(2,6,23,0.06)}
-    h1{margin:0 0 6px;font-size:20px}
-    p.lead{margin:0 0 14px;color:#475569;font-size:13px}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    label{font-size:13px;color:#334155;margin-bottom:6px;display:block}
-    input[type="number"], input[type="text"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px}
-    .full{grid-column:1/-1}
-    .btn{margin-top:10px;padding:10px 12px;border-radius:8px;border:0;background:#0ea5a4;color:white;cursor:pointer;font-weight:600}
-    .result{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .badge{padding:6px 10px;border-radius:999px;background:#eef2ff;color:#312e81;font-weight:700;font-size:13px}
-    .note{font-size:13px;color:#475569;margin-top:8px}
-    pre {background:#0f1724;color:#e6eef6;padding:10px;border-radius:8px;overflow:auto}
-    @media (max-width:720px){ .grid{grid-template-columns:1fr} }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 5px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; width: 100%; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .result { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>ADI Calculator — Attack / Defense Index</h1>
-    <p class="lead">Masukkan rata-rata gol (GF) dan kebobolan (GA) — home/away & H2H jika ada. Tool akan hitung ADI, expected goals sederhana, dan interpretasi singkat.</p>
+  <h2>Calculator ADI</h2>
 
-    <div class="grid">
-      <div>
-        <label>Home Team</label>
-        <input id="teamHome" type="text" value="Home Team" />
-      </div>
-      <div>
-        <label>Away Team</label>
-        <input id="teamAway" type="text" value="Away Team" />
-      </div>
+  <label>GF Home (gol rata² cetak kandang tim Home):</label>
+  <input type="number" id="gfHome" step="0.1">
 
-      <div>
-        <label>Home GF (gol per laga kandang)</label>
-        <input id="homeGF" type="number" step="0.01" value="1.50" />
-      </div>
-      <div>
-        <label>Home GA (kebobolan per laga kandang)</label>
-        <input id="homeGA" type="number" step="0.01" value="1.00" />
-      </div>
+  <label>GA Home (gol rata² kebobolan kandang tim Home):</label>
+  <input type="number" id="gaHome" step="0.1">
 
-      <div>
-        <label>Away GF (gol per laga tandang)</label>
-        <input id="awayGF" type="number" step="0.01" value="1.20" />
-      </div>
-      <div>
-        <label>Away GA (kebobolan per laga tandang)</label>
-        <input id="awayGA" type="number" step="0.01" value="1.10" />
-      </div>
+  <label>GF Away (gol rata² cetak tandang tim Away):</label>
+  <input type="number" id="gfAway" step="0.1">
 
-      <div class="full">
-        <label>H2H (opsional — isikan jika punya; contoh: Home GF di kandang vs lawan ini)</label>
-        <div class="grid">
-          <div>
-            <label>H2H Home GF</label>
-            <input id="h2hHomeGF" type="number" step="0.01" value="1.00" />
-          </div>
-          <div>
-            <label>H2H Home GA</label>
-            <input id="h2hHomeGA" type="number" step="0.01" value="1.20" />
-          </div>
-          <div>
-            <label>H2H Away GF</label>
-            <input id="h2hAwayGF" type="number" step="0.01" value="1.10" />
-          </div>
-          <div>
-            <label>H2H Away GA</label>
-            <input id="h2hAwayGA" type="number" step="0.01" value="1.00" />
-          </div>
-        </div>
-      </div>
+  <label>GA Away (gol rata² kebobolan tandang tim Away):</label>
+  <input type="number" id="gaAway" step="0.1">
 
-      <div>
-        <label>Line O/U (opsional)</label>
-        <input id="ouLine" type="number" step="0.25" value="2.5" />
-      </div>
-      <div>
-        <label>Odds Over (opsional)</label>
-        <input id="oddsOver" type="number" step="0.01" value="1.95" />
-      </div>
+  <button onclick="hitungADI()">Hitung ADI</button>
 
-      <div class="full">
-        <button class="btn" id="calcBtn">Hitung ADI & Interpretasi</button>
-      </div>
-    </div>
-
-    <div id="result" class="result" style="display:none">
-      <div class="row" style="align-items:center;justify-content:space-between">
-        <div><strong id="matchTitle"></strong></div>
-        <div class="badge" id="quickBadge">ADI Tool</div>
-      </div>
-
-      <div id="outText" style="margin-top:10px;font-size:14px;color:#0f1724"></div>
-
-      <div style="margin-top:10px;">
-        <strong>Perhitungan detail</strong>
-        <pre id="details"></pre>
-      </div>
-
-      <div class="note" id="advice"></div>
-    </div>
-  </div>
+  <div class="result" id="output"></div>
 
   <script>
-    const el = id => document.getElementById(id);
+    function hitungADI() {
+      let gfHome = parseFloat(document.getElementById("gfHome").value);
+      let gaHome = parseFloat(document.getElementById("gaHome").value);
+      let gfAway = parseFloat(document.getElementById("gfAway").value);
+      let gaAway = parseFloat(document.getElementById("gaAway").value);
 
-    function safeDiv(a,b){ b = Number(b); if(isNaN(b) || b === 0) return a; return a / b; }
-
-    el('calcBtn').addEventListener('click', ()=>{
-      const teamHome = el('teamHome').value || 'Home';
-      const teamAway = el('teamAway').value || 'Away';
-
-      const homeGF = parseFloat(el('homeGF').value) || 0;
-      const homeGA = parseFloat(el('homeGA').value) || 0;
-      const awayGF = parseFloat(el('awayGF').value) || 0;
-      const awayGA = parseFloat(el('awayGA').value) || 0;
-
-      const h2hHomeGF = parseFloat(el('h2hHomeGF').value);
-      const h2hHomeGA = parseFloat(el('h2hHomeGA').value);
-      const h2hAwayGF = parseFloat(el('h2hAwayGF').value);
-      const h2hAwayGA = parseFloat(el('h2hAwayGA').value);
-
-      const ouLine = parseFloat(el('ouLine').value) || 2.5;
-      const oddsOver = parseFloat(el('oddsOver').value) || null;
-
-      // ADI dasar (menggunakan GF/GA home/away)
-      // ADI Home = Home_GF / Away_GA
-      // ADI Away = Away_GF / Home_GA
-      const ADI_home = safeDiv(homeGF, awayGA || 0.0001);
-      const ADI_away = safeDiv(awayGF, homeGA || 0.0001);
-
-      // Attack & Defense "real" (gabungkan H2H jika ada)
-      // Jika H2H diisi (non-NaN), gabungkan dengan bobot: form 65% + H2H 35%
-      function blend(formValue, h2hValue){
-        if(isNaN(h2hValue)) return formValue;
-        return formValue * 0.65 + h2hValue * 0.35;
-      }
-      const homeAttack = blend(homeGF, h2hHomeGF);
-      const homeDefense = blend(homeGA, h2hHomeGA);
-      const awayAttack = blend(awayGF, h2hAwayGF);
-      const awayDefense = blend(awayGA, h2hAwayGA);
-
-      // Expected goals simple (attack vs defense)
-      const expHome = (homeAttack + awayDefense) / 2;
-      const expAway = (awayAttack + homeDefense) / 2;
-      const totalExp = expHome + expAway;
-
-      // Interpretasi ADI
-      let interp = [];
-      if(ADI_home > 1.2) interp.push(`${teamHome} memiliki serangan relatif kuat vs pertahanan ${teamAway} (ADI home ${ADI_home.toFixed(2)})`);
-      else if(ADI_home > 0.9) interp.push(`${teamHome} serangan cukup seimbang vs pertahanan ${teamAway} (ADI home ${ADI_home.toFixed(2)})`);
-      else interp.push(`${teamHome} serangan lemah vs pertahanan ${teamAway} (ADI home ${ADI_home.toFixed(2)})`);
-
-      if(ADI_away > 1.2) interp.push(`${teamAway} memiliki serangan relatif kuat vs pertahanan ${teamHome} (ADI away ${ADI_away.toFixed(2)})`);
-      else if(ADI_away > 0.9) interp.push(`${teamAway} serangan cukup seimbang vs pertahanan ${teamHome} (ADI away ${ADI_away.toFixed(2)})`);
-      else interp.push(`${teamAway} serangan lemah vs pertahanan ${teamHome} (ADI away ${ADI_away.toFixed(2)})`);
-
-      // Quick signals (Over/Under & BTTS hint)
-      let ouHint = 'No clear edge (check odds)';
-      if(totalExp > ouLine + 0.25) ouHint = `Tendensi OVER (expected ${totalExp.toFixed(2)} > line ${ouLine})`;
-      else if(totalExp < ouLine - 0.25) ouHint = `Tendensi UNDER (expected ${totalExp.toFixed(2)} < line ${ouLine})`;
-      else ouHint = `Close to line (expected ${totalExp.toFixed(2)} ~ ${ouLine})`;
-
-      // BTTS simple heuristic: both exp > 0.8 -> likely BTTS
-      let bttsProbHint = (expHome > 0.8 && expAway > 0.8) ? 'BTTS likely (both teams expected >0.8 goals)' : 'BTTS uncertain/less likely';
-
-      // Market alignment (jika odds Over tersedia)
-      let marketNote = '';
-      if(oddsOver){
-        if(ouHint.startsWith('Tendensi OVER') && oddsOver > 2.0) marketNote = 'Odds tinggi untuk Over — POTENSI VALUE jika data kuat';
-        if(ouHint.startsWith('Tendensi OVER') && oddsOver < 1.9) marketNote = 'Market mendukung Over — konfirmasi sinyal';
-        if(ouHint.startsWith('Tendensi UNDER') && oddsOver < 1.9) marketNote = 'Market condong Under meski data mendukung Under — konsisten';
+      if (isNaN(gfHome) || isNaN(gaHome) || isNaN(gfAway) || isNaN(gaAway)) {
+        document.getElementById("output").innerText = "⚠️ Lengkapi semua input!";
+        return;
       }
 
-      // Build output
-      el('result').style.display = 'block';
-      el('matchTitle').textContent = `${teamHome} vs ${teamAway}`;
-      el('outText').innerHTML = `
-        <strong>ADI Home:</strong> ${ADI_home.toFixed(2)} &nbsp; | &nbsp;
-        <strong>ADI Away:</strong> ${ADI_away.toFixed(2)} <br>
-        <strong>Expected goals (simple):</strong> Home ${expHome.toFixed(2)} — Away ${expAway.toFixed(2)} — Total ${totalExp.toFixed(2)} <br>
-        <strong>Interpretasi:</strong> ${interp.join(' • ')} <br>
-        <strong>O/U hint:</strong> ${ouHint} <br>
-        <strong>BTTS:</strong> ${bttsProbHint} <br>
-        ${marketNote ? `<strong>Market note:</strong> ${marketNote}` : ''}
+      let adiHome = (gfHome / gaAway).toFixed(2);
+      let adiAway = (gfAway / gaHome).toFixed(2);
+
+      document.getElementById("output").innerHTML = `
+        🔥 ADI Home: ${adiHome} <br>
+        🔥 ADI Away: ${adiAway}
       `;
-
-      // Detailed breakdown text
-      el('details').textContent = [
-        `DETAILS:`,
-        `homeGF: ${homeGF}, homeGA: ${homeGA}`,
-        `awayGF: ${awayGF}, awayGA: ${awayGA}`,
-        `h2hHomeGF: ${isNaN(h2hHomeGF)? 'n/a' : h2hHomeGF}, h2hHomeGA: ${isNaN(h2hHomeGA)? 'n/a' : h2hHomeGA}`,
-        `h2hAwayGF: ${isNaN(h2hAwayGF)? 'n/a' : h2hAwayGF}, h2hAwayGA: ${isNaN(h2hAwayGA)? 'n/a' : h2hAwayGA}`,
-        `Computed:`,
-        ` homeAttack (blend): ${homeAttack.toFixed(3)}`,
-        ` homeDefense (blend): ${homeDefense.toFixed(3)}`,
-        ` awayAttack (blend): ${awayAttack.toFixed(3)}`,
-        ` awayDefense (blend): ${awayDefense.toFixed(3)}`,
-        ` ADI_home: ${ADI_home.toFixed(3)}`,
-        ` ADI_away: ${ADI_away.toFixed(3)}`,
-        ` expHome: ${expHome.toFixed(3)}`,
-        ` expAway: ${expAway.toFixed(3)}`,
-        ` totalExp: ${totalExp.toFixed(3)}`
-      ].join('\n');
-
-      // Advice
-      let advice = [];
-      if(ADI_home > 1.2 && ADI_away <= 1) advice.push(`${teamHome} attack >>; pertimbangkan HDP Home jika odds mendukung`);
-      if(ADI_away > 1.2 && ADI_home <= 1) advice.push(`${teamAway} attack >>; pertimbangkan HDP Away jika odds mendukung`);
-      if(totalExp > ouLine + 0.25) advice.push(`Data mendukung OVER; cek odds Over untuk value`);
-      if(totalExp < ouLine - 0.25) advice.push(`Data mendukung UNDER; cek odds Under`);
-      if(bttsProbHint.includes('likely')) advice.push(`BTTS kemungkinan besar — bisa pertimbangkan BTTS market`);
-      if(marketNote) advice.push(marketNote);
-
-      el('advice').textContent = advice.length ? 'Saran: ' + advice.join(' • ') : 'Saran: Tidak ada sinyal kuat — tunggu info lebih lanjut (lineup/odds).';
-    });
+    }
   </script>
 </body>
 </html>
