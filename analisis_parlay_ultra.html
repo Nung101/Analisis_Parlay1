@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analisis Parlay Ultra (ExpG + ADI + H2H + Injury Intelligence)</title>
+  <style>
+    body{font-family:Inter, Arial, Helvetica, sans-serif;background:#f6f7fb;color:#111;margin:18px}
+    .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,20,40,0.06);margin-bottom:14px}
+    input,select{padding:8px;border-radius:8px;border:1px solid #e3e7ee;width:100%;box-sizing:border-box}
+    label{font-weight:600;margin-top:8px;display:block}
+    button{background:#0b6cff;color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
+    .result{margin-top:12px}
+    .high{background:#e9f8ee;border-left:6px solid #22c55e;padding:10px;border-radius:8px}
+    .moderate{background:#fff8e6;border-left:6px solid #ffb020;padding:10px;border-radius:8px}
+    .low{background:#fff0f2;border-left:6px solid #ff4d6d;padding:10px;border-radius:8px}
+    pre{background:#0f1724;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
+    .small{font-size:12px;color:#556}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Analisis Parlay — Ultra (ExpG + ADI + H2H + Injury)</h2>
+    <div class="grid">
+      <div>
+        <label>Tim Home</label>
+        <input id="home" placeholder="Djurgarden" value="Djurgarden">
+      </div>
+      <div>
+        <label>Tim Away</label>
+        <input id="away" placeholder="IK Sirius" value="IK Sirius">
+      </div>
+    </div><div class="grid">
+  <div>
+    <label>Rata2 Gol Home (GF/90)</label>
+    <input id="home_gf" type="number" step="0.01" value="1.6">
+  </div>
+  <div>
+    <label>Rata2 Kebobolan Home (GA/90)</label>
+    <input id="home_ga" type="number" step="0.01" value="1.2">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Rata2 Gol Away (GF/90)</label>
+    <input id="away_gf" type="number" step="0.01" value="1.1">
+  </div>
+  <div>
+    <label>Rata2 Kebobolan Away (GA/90)</label>
+    <input id="away_ga" type="number" step="0.01" value="1.6">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>H2H Home GF (avg per match) — kosong kalau tidak ada</label>
+    <input id="h2h_home_gf" type="number" step="0.01" placeholder="">
+  </div>
+  <div>
+    <label>H2H Away GF (avg per match) — kosong kalau tidak ada</label>
+    <input id="h2h_away_gf" type="number" step="0.01" placeholder="">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Form Home GF (avg 5 matches) — opsional</label>
+    <input id="home_form_gf" type="number" step="0.01" placeholder="">
+  </div>
+  <div>
+    <label>Form Away GF (avg 5 matches) — opsional</label>
+    <input id="away_form_gf" type="number" step="0.01" placeholder="">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Line O/U (ex: 3.0)</label>
+    <input id="ou_line" type="number" step="0.5" value="3.0">
+  </div>
+  <div>
+    <label>Odds Over (decimal)</label>
+    <input id="odds_over" type="number" step="0.01" value="1.90">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Odds Under (decimal)</label>
+    <input id="odds_under" type="number" step="0.01" value="1.95">
+  </div>
+  <div>
+    <label>Competition (text)</label>
+    <input id="competition" placeholder="league / cup / uefa" value="league">
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Squad Depth Home (0.6..1.8)</label>
+    <input id="squad_depth_home" type="number" step="0.1" value="1.0">
+  </div>
+  <div>
+    <label>Squad Depth Away (0.6..1.8)</label>
+    <input id="squad_depth_away" type="number" step="0.1" value="1.0">
+  </div>
+</div>
+
+<div style="margin-top:12px" class="card">
+  <h4>Injury Manager (pilih role lalu Add injury)</h4>
+  <div class="grid">
+    <div>
+      <label>Role Home</label>
+      <select id="inj_role_home">
+        <option value="rotation">Rotation / Pelapis</option>
+        <option value="starter">Starter Reguler</option>
+        <option value="key">Pemain Kunci</option>
+        <option value="goalkeeper">Kiper Inti</option>
+        <option value="def_core">Bek Inti</option>
+        <option value="mid_core">Gelandang Inti</option>
+        <option value="striker_core">Penyerang Inti</option>
+      </select>
+      <button type="button" onclick="addInjury('home')">Add Injury Home</button>
+      <ul id="inj_list_home"></ul>
+    </div>
+    <div>
+      <label>Role Away</label>
+      <select id="inj_role_away">
+        <option value="rotation">Rotation / Pelapis</option>
+        <option value="starter">Starter Reguler</option>
+        <option value="key">Pemain Kunci</option>
+        <option value="goalkeeper">Kiper Inti</option>
+        <option value="def_core">Bek Inti</option>
+        <option value="mid_core">Gelandang Inti</option>
+        <option value="striker_core">Penyerang Inti</option>
+      </select>
+      <button type="button" onclick="addInjury('away')">Add Injury Away</button>
+      <ul id="inj_list_away"></ul>
+    </div>
+  </div>
+  <div class="small">Tip: pilih role sesuai peran pemain. Sistem otomatis hitung dampak berdasarkan squad depth + role.</div>
+</div>
+
+<div style="margin-top:12px">
+  <button onclick="analisis()">Analisis Sekarang</button>
+</div>
+
+<div id="output" class="result"></div>
+
+  </div><script>
+// ===== Utilities =====
+function safeNum(v,f=NaN){let x=Number(v);return isNaN(x)?f:x}
+function rand(){return Math.random()}
+function randPoisson(lambda){ // Knuth but safe for moderate lambda
+  if(lambda<=0) return 0; if(lambda>40){ // normal approx
+    return Math.max(0, Math.round(Math.random()*Math.sqrt(lambda)+lambda));
+  }
+  let L=Math.exp(-lambda),k=0,p=1;while(p>L){k++;p*=Math.random();}return k-1;
+}
+function normalSample(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+// Gamma sampler (Marsaglia-Tsang)
+function sampleGamma(alpha){ if(alpha<1){ let u=Math.random(); return sampleGamma(1+alpha)*Math.pow(u,1/alpha);} let d=alpha-1/3,c=1/Math.sqrt(9*d); while(true){let x=normalSample(); let v=Math.pow(1+c*x,3); if(v<=0) continue; let u=Math.random(); if(u<1-0.0331*Math.pow(x,4)) return d*v; if(Math.log(u)<0.5*x*x + d*(1-v+Math.log(v))) return d*v;} }
+function sampleNegBinom(mu,dispFactor){ // dispersion factor >=1
+  let phi = Math.max(1,dispFactor); // phi=1 => approx Poisson-like
+  // map phi -> gamma shape kappa (heuristic)
+  let kappa = Math.max(0.2, 5.0/phi);
+  let shape = kappa; let scale = mu/ kappa;
+  let lambdaPrime = sampleGamma(shape) * scale; // gamma(shape,scale)
+  if(lambdaPrime>40) return Math.max(0, Math.round(normalSample()*Math.sqrt(lambdaPrime)+lambdaPrime));
+  return randPoisson(lambdaPrime);
+}
+
+// ===== Injury manager =====
+const ROLE_IMPACT_V4 = {
+  rotation:{OV:0.02,DV:0.02}, starter:{OV:0.12,DV:0.10}, key:{OV:0.25,DV:0.20}, goalkeeper:{OV:0.00,DV:0.35}, def_core:{OV:0.03,DV:0.22}, mid_core:{OV:0.10,DV:0.10}, striker_core:{OV:0.22,DV:0.05}
+};
+let injuries={home:[],away:[]};
+function addInjury(side){const sel=document.getElementById(side==='home'?'inj_role_home':'inj_role_away'); injuries[side].push({role:sel.value,id:Date.now()+Math.random()}); renderInjuryList(side);} 
+function removeInjury(side,id){injuries[side]=injuries[side].filter(x=>x.id!==id); renderInjuryList(side);} 
+function renderInjuryList(side){const ul=document.getElementById(side==='home'?'inj_list_home':'inj_list_away'); ul.innerHTML=''; injuries[side].forEach(it=>{const li=document.createElement('li'); li.style.marginBottom='6px'; li.innerHTML=`${it.role} <button onclick="removeInjury('${side}',${it.id})">hapus</button>`; ul.appendChild(li);});}
+function applyInjuryV4(expHome,expAway,compFactor,oppFactor,locFactor){let hOV=0,hDV=0,aOV=0,aDV=0; injuries.home.forEach(it=>{let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; hOV+=r.OV; hDV+=r.DV}); injuries.away.forEach(it=>{let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; aOV+=r.OV; aDV+=r.DV}); let factor=compFactor*oppFactor*locFactor; expHome = expHome*(1-hOV*factor)+ aDV*factor; expAway = expAway*(1-aOV*factor)+ hDV*factor; let startersOut = injuries.home.length + injuries.away.length; let dispBoost = startersOut>=3?0.7:startersOut>=2?0.4:startersOut>=1?0.2:0; if(injuries.home.some(p=>p.role==='goalkeeper')|| injuries.away.some(p=>p.role==='goalkeeper')) dispBoost+=0.5; return {expHome,expAway,dispBoost}; }
+
+// ===== Core calculations =====
+function computeExpGoals(params){ const w=params.weights; let hasH2H=params.h2h_available, hasForm=params.form_available; let wLeague=w.league, wForm=hasForm? w.form:0, wH2H=hasH2H? w.h2h:0; let s=wLeague+wForm+wH2H; wLeague/=s; wForm/=s; wH2H/=s; let homeAttack = wLeague*params.home_league_gf + wForm*params.home_form_gf + wH2H*params.home_h2h_gf; let homeDefense = wLeague*params.home_league_ga + wForm*params.home_form_ga + wH2H*params.home_h2h_ga; let awayAttack = wLeague*params.away_league_gf + wForm*params.away_form_gf + wH2H*params.away_h2h_gf; let awayDefense = wLeague*params.away_league_ga + wForm*params.away_form_ga + wH2H*params.away_h2h_ga; let expHome=(homeAttack+awayDefense)/2; let expAway=(awayAttack+homeDefense)/2; expHome=Math.max(0.03,expHome); expAway=Math.max(0.03,expAway); return {expHome,expAway,homeAttack,awayAttack,homeDefense,awayDefense};}
+
+function dynamicDispersion(params){ let base=1.25; if(params.ADI_home>1.5||params.ADI_away>1.5) base+=0.35; if(params.ADI_home>2.0||params.ADI_away>2.0) base+=0.4; if(params.GPI>1.5) base+=0.4; if(params.formVariance>0.9) base+=0.25; if(params.competition && (params.competition.toLowerCase().includes('cup')||params.competition.toLowerCase().includes('uefa')||params.competition.toLowerCase().includes('intl'))) base+=0.5; if(params.lineupRisk) base+=0.6; return Math.min(4.0,Math.max(1.0,base)); }
+
+function monteCarloScores(expHome,expAway,dispersionFactor,iterations=5000,maxGoalCap=12){ let tally={}, totalGoalsCounts={}; let homeWins=0,awayWins=0,draws=0,btts=0,extreme5plus=0; for(let it=0;it<iterations;it++){ let gh=sampleNegBinom(expHome,dispersionFactor); let ga=sampleNegBinom(expAway,dispersionFactor); if(gh>maxGoalCap) gh=maxGoalCap; if(ga>maxGoalCap) ga=maxGoalCap; let key=gh+"-"+ga; tally[key]=(tally[key]||0)+1; let tg=gh+ga; totalGoalsCounts[tg]=(totalGoalsCounts[tg]||0)+1; if(gh>ga) homeWins++; else if(ga>gh) awayWins++; else draws++; if(gh>0 && ga>0) btts++; if(tg>=5) extreme5plus++; } let scores=Object.keys(tally).map(k=>({skor:k,prob:tally[k]/iterations})).sort((a,b)=>b.prob-a.prob); let goalsDist=Object.keys(totalGoalsCounts).map(g=>({goals:Number(g),prob:totalGoalsCounts[g]/iterations})).sort((a,b)=>a.goals-b.goals); return {scores,goalsDist,probs:{homeWin:homeWins/iterations,awayWin:awayWins/iterations,draw:draws/iterations,BTTS:btts/iterations,extreme5plus:extreme5plus/iterations,over25:goalsDist.filter(x=>x.goals>2.5).reduce((s,x)=>s+x.prob,0),over35:goalsDist.filter(x=>x.goals>3.5).reduce((s,x)=>s+x.prob,0)}} }
+
+function impliedProb(decimalOdds){ if(!decimalOdds||decimalOdds<=1) return 0; return 1/decimalOdds }
+function marketTrapV3(modelProbs,odds){ let impOver=impliedProb(odds.overOdds), impUnder=impliedProb(odds.underOdds); let sumOU=impOver+impUnder; if(sumOU>0){impOver/=sumOU;impUnder/=sumOU;} let ouDiff=Math.abs(modelProbs.over25-impOver); let note=''; if(ouDiff>0.18) note='⚠️ Strong market mismatch — cek lineup/berita (possible trap)'; else if(ouDiff>0.10) note='⚠️ Market discrepancy detected — verify news/lineup'; return {ouDiff,note,imp:{over:impOver,under:impUnder}} }
+function calibrateConfidence(baseConfidence,flags){ let conf=baseConfidence; if(flags.h2hMissing) conf-=7; if(flags.formMissingCount>=3) conf-=6; if(flags.oddsMismatch>0.15) conf-=12; if(flags.extremeRisk>0.20 && flags.recommendation==='Under') conf-=14; conf=Math.max(18,Math.min(92,conf)); return Math.round(conf*10)/10 }
+
+// ===== Main analysis =====
+function analisis(){ const home=document.getElementById('home').value||'Home'; const away=document.getElementById('away').value||'Away'; let home_league_gf=safeNum(document.getElementById('home_gf').value,1.0); let home_league_ga=safeNum(document.getElementById('home_ga').value,1.0); let away_league_gf=safeNum(document.getElementById('away_gf').value,1.0); let away_league_ga=safeNum(document.getElementById('away_ga').value,1.0); let home_form_gf=safeNum(document.getElementById('home_form_gf')?document.getElementById('home_form_gf').value:null,null); let away_form_gf=safeNum(document.getElementById('away_form_gf')?document.getElementById('away_form_gf').value:null,null); let form_available=!(home_form_gf===null&&away_form_gf===null); let h2h_home_gf=safeNum(document.getElementById('h2h_home_gf').value,null); let h2h_away_gf=safeNum(document.getElementById('h2h_away_gf').value,null); let h2h_available=!(h2h_home_gf===null&&h2h_away_gf===null); let odds_over=safeNum(document.getElementById('odds_over').value,null); let odds_under=safeNum(document.getElementById('odds_under').value,null); let ou_line=safeNum(document.getElementById('ou_line').value,3.0); let competition=document.getElementById('competition').value||''; let squad_depth_home=safeNum(document.getElementById('squad_depth_home').value,1.0); let squad_depth_away=safeNum(document.getElementById('squad_depth_away').value,1.0);
+
+ let formVariance=0.4; if(form_available){ let hf=home_form_gf||home_league_gf; let af=away_form_gf||away_league_gf; let varHome=Math.abs(hf-home_league_gf); let varAway=Math.abs(af-away_league_gf); formVariance=Math.min(2.5,(varHome+varAway)/1.0); }
+
+ let weights={league:0.6,form:0.25,h2h:0.15}; let params={weights:weights,h2h_available:h2h_available,form_available:form_available,home_league_gf:home_league_gf,home_league_ga:home_league_ga,away_league_gf:away_league_gf,away_league_ga:away_league_ga,home_form_gf:home_form_gf||home_league_gf,home_form_ga:home_league_ga,away_form_gf:away_form_gf||away_league_gf,away_form_ga:away_league_ga,home_h2h_gf:h2h_home_gf||home_league_gf*0.3,home_h2h_ga:home_league_ga*0.3,away_h2h_gf:h2h_away_gf||away_league_gf*0.3,away_h2h_ga:away_league_ga*0.3,contextBoostHome:0,contextBoostAway:0}; if(competition && (competition.toLowerCase().includes('cup')||competition.toLowerCase().includes('uefa')||competition.toLowerCase().includes('intl'))){ params.contextBoostHome+=0.15; params.contextBoostAway+=0.15; }
+
+ let eg=computeExpGoals(params); let ADI_home=(params.home_league_gf/(params.away_league_ga||1)); let ADI_away=(params.away_league_gf/(params.home_league_ga||1)); let GPI=(eg.homeAttack+eg.awayAttack)-(eg.homeDefense+eg.awayDefense);
+
+ // apply injury adjustments
+ let compFactor = (competition && competition.toLowerCase().includes('cup'))?1.2:1.0; let oppFactor=1.0, locFactor=1.0; let injRes=applyInjuryV4(eg.expHome,eg.expAway,compFactor,oppFactor,locFactor); let expHome=injRes.expHome, expAway=injRes.expAway; 
+
+ // dispersion
+ let disp = dynamicDispersion({ADI_home:ADI_home,ADI_away:ADI_away,GPI:GPI,formVariance:formVariance,competition:competition,lineupRisk:injRes.startersOut}); disp += injRes.dispBoost||0; disp = Math.min(4.0,disp);
+
+ // Monte Carlo
+ let ITER = 5000; let mc = monteCarloScores(expHome,expAway,disp,ITER,12); let topScores = mc.scores.slice(0,6).map(s=>`${s.skor} (${(s.prob*100).toFixed(1)}%)`).join(', ');
+
+ let modelProbs = {homeWin:mc.probs.homeWin,awayWin:mc.probs.awayWin,draw:mc.probs.draw,over25:mc.probs.over25,over35:mc.probs.over35,BTTS:mc.probs.BTTS,extreme5plus:mc.probs.extreme5plus};
+ let trap = marketTrapV3(modelProbs,{overOdds:odds_over,underOdds:odds_under});
+
+ // recommendation logic O/U
+ let rekom_ou='No Bet'; let raw_conf=60; if(modelProbs.over25>0.66){ rekom_ou=`Over ${ou_line}`; raw_conf = 70 + (modelProbs.over25 - 0.66)*40; } else if(modelProbs.over25<0.40 && modelProbs.extreme5plus<0.12){ rekom_ou=`Under ${ou_line}`; raw_conf = 68 + (0.40 - modelProbs.over25)*50; } else{ rekom_ou='No Bet'; raw_conf=50; }
+ // HDP simple (use model 1X2)
+ let rekom_hdp='No Bet'; let hdp_conf=50; if(modelProbs.homeWin>modelProbs.awayWin+0.12 && safeNum(document.getElementById('hdp_line')?document.getElementById('hdp_line').value:null,null)!==null){ rekom_hdp = `${home} -${document.getElementById('hdp_line')?document.getElementById('hdp_line').value:'line'}`; hdp_conf=68 + (modelProbs.homeWin*25); } else if(modelProbs.awayWin>modelProbs.homeWin+0.12 && safeNum(document.getElementById('hdp_line')?document.getElementById('hdp_line').value:null,null)!==null){ rekom_hdp = `${away} -${document.getElementById('hdp_line')?document.getElementById('hdp_line').value:0}`; hdp_conf=68 + (modelProbs.awayWin*25); }
+
+ // confidence
+ let flags={h2hMissing:!h2h_available,formMissingCount:(!form_available?3:0),oddsMismatch:trap.ouDiff,extremeRisk:mc.probs.extreme5plus,recommendation:rekom_ou}; let final_ou_conf = calibrateConfidence(raw_conf,flags); let final_hdp_conf = calibrateConfidence(hdp_conf,flags);
+
+ // narrative
+ let narrative=''; if(ADI_home>ADI_away) narrative+=`${home} lebih unggul secara ADI. `; if(GPI>1.5) narrative+='Pertandingan cenderung terbuka (GPI tinggi). '; if(mc.probs.extreme5plus>0.18) narrative+='⚠️ Risiko skor ekstrem (5+ gol) cukup tinggi. '; if(trap.note) narrative+=trap.note+' ';
+
+ // assemble output
+ let out = `<h3>${home} vs ${away}</h3>`;
+ out += `<div class="card">🔢 ExpGoals → Home: ${expHome.toFixed(2)} | Away: ${expAway.toFixed(2)} | Total: ${(expHome+expAway).toFixed(2)}<br>`;
+ out += `📊 ADI Home: ${ADI_home.toFixed(2)} | ADI Away: ${ADI_away.toFixed(2)} | GPI: ${GPI.toFixed(2)}<br>`;
+ out += `🧪 Dispersion factor: ${disp.toFixed(2)} | MonteCarlo sims: ${ITER}<br>`;
+ out += `🎯 Probabilities → Over${ou_line}: ${(modelProbs.over25*100).toFixed(1)}% | Over3.5: ${(modelProbs.over35*100).toFixed(1)}% | BTTS: ${(modelProbs.BTTS*100).toFixed(1)}% | Skor 5+ gol: ${(modelProbs.extreme5plus*100).toFixed(1)}%<br>`;
+ out += `📈 Top scores: ${topScores}<br>`;
+ out += `📝 Narasi: ${narrative}</div>`;
+ out += `<div class="${final_hdp_conf>=75?'high':final_hdp_conf>=65?'moderate':'low'}">👉 HDP: <b>${rekom_hdp}</b> (${final_hdp_conf}%)</div>`;
+ out += `<div class="${final_ou_conf>=75?'high':final_ou_conf>=65?'moderate':'low'}" style="margin-top:8px">👉 O/U: <b>${rekom_ou}</b> (${final_ou_conf}%)</div>`;
+ if(trap.note) out += `<div class="card" style="background:#fff7e6;border-left:6px solid #ff9800;margin-top:8px">${trap.note}</div>`;
+ out += `<div class="card small" style="margin-top:10px">Injury impact (home): ${injuries.home.length} | (away): ${injuries.away.length}. SquadDepth H:${squad_depth_home} A:${squad_depth_away}</div>`;
+ document.getElementById('output').innerHTML = out; }
+
+// initial render lists
+renderInjuryList('home'); renderInjuryList('away');
+</script>
+</body>
+  </html>
