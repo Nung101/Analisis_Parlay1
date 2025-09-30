@@ -1,247 +1,272 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Analisis Parlay Ultra (ExpG + ADI + H2H + Injury Intelligence)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisis Parlay Ultra</title>
   <style>
-    body{font-family:Inter, Arial, Helvetica, sans-serif;background:#f6f7fb;color:#111;margin:18px}
-    .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,20,40,0.06);margin-bottom:14px}
-    input,select{padding:8px;border-radius:8px;border:1px solid #e3e7ee;width:100%;box-sizing:border-box}
-    label{font-weight:600;margin-top:8px;display:block}
-    button{background:#0b6cff;color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
-    .result{margin-top:12px}
-    .high{background:#e9f8ee;border-left:6px solid #22c55e;padding:10px;border-radius:8px}
-    .moderate{background:#fff8e6;border-left:6px solid #ffb020;padding:10px;border-radius:8px}
-    .low{background:#fff0f2;border-left:6px solid #ff4d6d;padding:10px;border-radius:8px}
-    pre{background:#0f1724;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
-    .small{font-size:12px;color:#556}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+    body { font-family: Arial, sans-serif; padding: 15px; }
+    h2 { margin-top: 20px; }
+    .input-group { margin-bottom: 10px; }
+    label { display: block; font-weight: bold; margin-bottom: 4px; }
+    input, select { width: 100%; padding: 6px; margin-bottom: 8px; }
+    button { padding: 10px 20px; font-weight: bold; margin-top: 10px; }
+    #output { border: 1px solid #ccc; padding: 15px; margin-top: 20px; background: #f9f9f9; }
+    .injury-list { margin: 5px 0; font-size: 14px; }
+    .tooltip { font-size: 13px; color: #555; margin-top: -5px; margin-bottom: 8px; }
+    .conf-low { color: red; font-weight: bold; }
+    .conf-med { color: orange; font-weight: bold; }
+    .conf-high { color: green; font-weight: bold; }
+    .warning { color: red; font-weight: bold; margin-top: 10px; }
+    .trap { color: darkred; font-weight: bold; margin-top: 8px; background: #ffe0e0; padding: 6px; border-radius: 5px; }
+    .sim-table { border-collapse: collapse; margin-top: 10px; }
+    .sim-table th, .sim-table td { border: 1px solid #ccc; padding: 4px 6px; font-size: 13px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Analisis Parlay — Ultra (ExpG + ADI + H2H + Injury)</h2>
-    <div class="grid">
-      <div>
-        <label>Tim Home</label>
-        <input id="home" placeholder="Djurgarden" value="Djurgarden">
-      </div>
-      <div>
-        <label>Tim Away</label>
-        <input id="away" placeholder="IK Sirius" value="IK Sirius">
-      </div>
-    </div><div class="grid">
-  <div>
+  <h2>Analisis Parlay — Ultra (ExpG + ADI + H2H + Injury + Market Trap)</h2>  <div class="input-group">
+    <label>Tim Home</label>
+    <input type="text" id="team_home" placeholder="Contoh: Djurgarden">
+    <label>Tim Away</label>
+    <input type="text" id="team_away" placeholder="Contoh: IK Sirius">
+  </div>  <div class="input-group">
     <label>Rata2 Gol Home (GF/90)</label>
-    <input id="home_gf" type="number" step="0.01" value="1.6">
-  </div>
-  <div>
+    <input type="number" step="0.01" id="gf_home">
     <label>Rata2 Kebobolan Home (GA/90)</label>
-    <input id="home_ga" type="number" step="0.01" value="1.2">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
+    <input type="number" step="0.01" id="ga_home">
     <label>Rata2 Gol Away (GF/90)</label>
-    <input id="away_gf" type="number" step="0.01" value="1.1">
-  </div>
-  <div>
+    <input type="number" step="0.01" id="gf_away">
     <label>Rata2 Kebobolan Away (GA/90)</label>
-    <input id="away_ga" type="number" step="0.01" value="1.6">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
+    <input type="number" step="0.01" id="ga_away">
+  </div>  <div class="input-group">
     <label>H2H Home GF (avg per match) — kosong kalau tidak ada</label>
-    <input id="h2h_home_gf" type="number" step="0.01" placeholder="">
-  </div>
-  <div>
+    <input type="number" step="0.01" id="h2h_home">
     <label>H2H Away GF (avg per match) — kosong kalau tidak ada</label>
-    <input id="h2h_away_gf" type="number" step="0.01" placeholder="">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
+    <input type="number" step="0.01" id="h2h_away">
+  </div>  <div class="input-group">
     <label>Form Home GF (avg 5 matches) — opsional</label>
-    <input id="home_form_gf" type="number" step="0.01" placeholder="">
-  </div>
-  <div>
+    <input type="number" step="0.01" id="form_home">
     <label>Form Away GF (avg 5 matches) — opsional</label>
-    <input id="away_form_gf" type="number" step="0.01" placeholder="">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
-    <label>Line O/U (ex: 3.0)</label>
-    <input id="ou_line" type="number" step="0.5" value="3.0">
-  </div>
-  <div>
+    <input type="number" step="0.01" id="form_away">
+  </div>  <div class="input-group">
+    <label>Line O/U (contoh: 2.5 atau 3.0)</label>
+    <input type="number" step="0.1" id="line_ou">
     <label>Odds Over (decimal)</label>
-    <input id="odds_over" type="number" step="0.01" value="1.90">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
+    <input type="number" step="0.01" id="odds_over">
     <label>Odds Under (decimal)</label>
-    <input id="odds_under" type="number" step="0.01" value="1.95">
-  </div>
-  <div>
-    <label>Competition (text)</label>
-    <input id="competition" placeholder="league / cup / uefa" value="league">
-  </div>
-</div>
-
-<div class="grid">
-  <div>
-    <label>Squad Depth Home (0.6..1.8)</label>
-    <input id="squad_depth_home" type="number" step="0.1" value="1.0">
-  </div>
-  <div>
-    <label>Squad Depth Away (0.6..1.8)</label>
-    <input id="squad_depth_away" type="number" step="0.1" value="1.0">
-  </div>
-</div>
-
-<div style="margin-top:12px" class="card">
-  <h4>Injury Manager (pilih role lalu Add injury)</h4>
-  <div class="grid">
+    <input type="number" step="0.01" id="odds_under">
+    <label>Competition (league / cup / ucl / uefa)</label>
+    <input type="text" id="competition">
+  </div>  <div class="input-group">
+    <label>Mode Squad Depth</label>
+    <select id="squad_mode">
+      <option value="auto">Auto (default, hitung otomatis)</option>
+      <option value="manual">Manual (isi sendiri)</option>
+    </select>
+    <div id="manual_squad_inputs" style="display:none;">
+      <label>Squad Depth Home (0.6 - 1.8)</label>
+      <input type="number" step="0.1" id="squad_home_manual">
+      <div class="tooltip">0.6–0.9 = tim lemah / kedalaman tipis • 1.0–1.2 = tim normal • 1.3–1.8 = tim besar / banyak rotasi</div>
+      <label>Squad Depth Away (0.6 - 1.8)</label>
+      <input type="number" step="0.1" id="squad_away_manual">
+      <div class="tooltip">Gunakan range yang sama. Jika ragu, biarkan Auto.</div>
+    </div>
+  </div>  <div class="input-group">
+    <label>Injury Manager (pilih role lalu Add injury)</label>
     <div>
-      <label>Role Home</label>
-      <select id="inj_role_home">
+      <select id="role_home">
         <option value="rotation">Rotation / Pelapis</option>
         <option value="starter">Starter Reguler</option>
-        <option value="key">Pemain Kunci</option>
-        <option value="goalkeeper">Kiper Inti</option>
-        <option value="def_core">Bek Inti</option>
-        <option value="mid_core">Gelandang Inti</option>
-        <option value="striker_core">Penyerang Inti</option>
+        <option value="key">Key Player</option>
+        <option value="goalkeeper">Goalkeeper</option>
+        <option value="def_core">Def Core</option>
+        <option value="mid_core">Mid Core</option>
+        <option value="striker_core">Striker Core</option>
       </select>
-      <button type="button" onclick="addInjury('home')">Add Injury Home</button>
-      <ul id="inj_list_home"></ul>
+      <button onclick="addInjury('home')">Add Injury Home</button>
+      <div id="injuries_home" class="injury-list"></div>
     </div>
     <div>
-      <label>Role Away</label>
-      <select id="inj_role_away">
+      <select id="role_away">
         <option value="rotation">Rotation / Pelapis</option>
         <option value="starter">Starter Reguler</option>
-        <option value="key">Pemain Kunci</option>
-        <option value="goalkeeper">Kiper Inti</option>
-        <option value="def_core">Bek Inti</option>
-        <option value="mid_core">Gelandang Inti</option>
-        <option value="striker_core">Penyerang Inti</option>
+        <option value="key">Key Player</option>
+        <option value="goalkeeper">Goalkeeper</option>
+        <option value="def_core">Def Core</option>
+        <option value="mid_core">Mid Core</option>
+        <option value="striker_core">Striker Core</option>
       </select>
-      <button type="button" onclick="addInjury('away')">Add Injury Away</button>
-      <ul id="inj_list_away"></ul>
+      <button onclick="addInjury('away')">Add Injury Away</button>
+      <div id="injuries_away" class="injury-list"></div>
     </div>
-  </div>
-  <div class="small">Tip: pilih role sesuai peran pemain. Sistem otomatis hitung dampak berdasarkan squad depth + role.</div>
-</div>
+    <div class="tooltip">Tip: gunakan role sesuai posisi & pentingnya pemain. Cedera GK & striker inti berdampak besar.</div>
+  </div><button onclick="analisis()">Analisis Sekarang</button>
 
-<div style="margin-top:12px">
-  <button onclick="analisis()">Analisis Sekarang</button>
-</div>
+  <div id="output"></div><script>
+let injuries = { home: [], away: [] };
 
-<div id="output" class="result"></div>
-
-  </div><script>
-// ===== Utilities =====
-function safeNum(v,f=NaN){let x=Number(v);return isNaN(x)?f:x}
-function rand(){return Math.random()}
-function randPoisson(lambda){ // Knuth but safe for moderate lambda
-  if(lambda<=0) return 0; if(lambda>40){ // normal approx
-    return Math.max(0, Math.round(Math.random()*Math.sqrt(lambda)+lambda));
-  }
-  let L=Math.exp(-lambda),k=0,p=1;while(p>L){k++;p*=Math.random();}return k-1;
-}
-function normalSample(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-// Gamma sampler (Marsaglia-Tsang)
-function sampleGamma(alpha){ if(alpha<1){ let u=Math.random(); return sampleGamma(1+alpha)*Math.pow(u,1/alpha);} let d=alpha-1/3,c=1/Math.sqrt(9*d); while(true){let x=normalSample(); let v=Math.pow(1+c*x,3); if(v<=0) continue; let u=Math.random(); if(u<1-0.0331*Math.pow(x,4)) return d*v; if(Math.log(u)<0.5*x*x + d*(1-v+Math.log(v))) return d*v;} }
-function sampleNegBinom(mu,dispFactor){ // dispersion factor >=1
-  let phi = Math.max(1,dispFactor); // phi=1 => approx Poisson-like
-  // map phi -> gamma shape kappa (heuristic)
-  let kappa = Math.max(0.2, 5.0/phi);
-  let shape = kappa; let scale = mu/ kappa;
-  let lambdaPrime = sampleGamma(shape) * scale; // gamma(shape,scale)
-  if(lambdaPrime>40) return Math.max(0, Math.round(normalSample()*Math.sqrt(lambdaPrime)+lambdaPrime));
-  return randPoisson(lambdaPrime);
-}
-
-// ===== Injury manager =====
 const ROLE_IMPACT_V4 = {
-  rotation:{OV:0.02,DV:0.02}, starter:{OV:0.12,DV:0.10}, key:{OV:0.25,DV:0.20}, goalkeeper:{OV:0.00,DV:0.35}, def_core:{OV:0.03,DV:0.22}, mid_core:{OV:0.10,DV:0.10}, striker_core:{OV:0.22,DV:0.05}
+  rotation: {OV:0.02, DV:0.02},
+  starter: {OV:0.12, DV:0.10},
+  key: {OV:0.25, DV:0.20},
+  goalkeeper: {OV:0.00, DV:0.35},
+  def_core: {OV:0.03, DV:0.22},
+  mid_core: {OV:0.10, DV:0.10},
+  striker_core: {OV:0.22, DV:0.05}
 };
-let injuries={home:[],away:[]};
-function addInjury(side){const sel=document.getElementById(side==='home'?'inj_role_home':'inj_role_away'); injuries[side].push({role:sel.value,id:Date.now()+Math.random()}); renderInjuryList(side);} 
-function removeInjury(side,id){injuries[side]=injuries[side].filter(x=>x.id!==id); renderInjuryList(side);} 
-function renderInjuryList(side){const ul=document.getElementById(side==='home'?'inj_list_home':'inj_list_away'); ul.innerHTML=''; injuries[side].forEach(it=>{const li=document.createElement('li'); li.style.marginBottom='6px'; li.innerHTML=`${it.role} <button onclick="removeInjury('${side}',${it.id})">hapus</button>`; ul.appendChild(li);});}
-function applyInjuryV4(expHome,expAway,compFactor,oppFactor,locFactor){let hOV=0,hDV=0,aOV=0,aDV=0; injuries.home.forEach(it=>{let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; hOV+=r.OV; hDV+=r.DV}); injuries.away.forEach(it=>{let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; aOV+=r.OV; aDV+=r.DV}); let factor=compFactor*oppFactor*locFactor; expHome = expHome*(1-hOV*factor)+ aDV*factor; expAway = expAway*(1-aOV*factor)+ hDV*factor; let startersOut = injuries.home.length + injuries.away.length; let dispBoost = startersOut>=3?0.7:startersOut>=2?0.4:startersOut>=1?0.2:0; if(injuries.home.some(p=>p.role==='goalkeeper')|| injuries.away.some(p=>p.role==='goalkeeper')) dispBoost+=0.5; return {expHome,expAway,dispBoost}; }
 
-// ===== Core calculations =====
-function computeExpGoals(params){ const w=params.weights; let hasH2H=params.h2h_available, hasForm=params.form_available; let wLeague=w.league, wForm=hasForm? w.form:0, wH2H=hasH2H? w.h2h:0; let s=wLeague+wForm+wH2H; wLeague/=s; wForm/=s; wH2H/=s; let homeAttack = wLeague*params.home_league_gf + wForm*params.home_form_gf + wH2H*params.home_h2h_gf; let homeDefense = wLeague*params.home_league_ga + wForm*params.home_form_ga + wH2H*params.home_h2h_ga; let awayAttack = wLeague*params.away_league_gf + wForm*params.away_form_gf + wH2H*params.away_h2h_gf; let awayDefense = wLeague*params.away_league_ga + wForm*params.away_form_ga + wH2H*params.away_h2h_ga; let expHome=(homeAttack+awayDefense)/2; let expAway=(awayAttack+homeDefense)/2; expHome=Math.max(0.03,expHome); expAway=Math.max(0.03,expAway); return {expHome,expAway,homeAttack,awayAttack,homeDefense,awayDefense};}
+function addInjury(side) {
+  const role = document.getElementById(`role_${side}`).value;
+  injuries[side].push({ role });
+  renderInjuries();
+}
 
-function dynamicDispersion(params){ let base=1.25; if(params.ADI_home>1.5||params.ADI_away>1.5) base+=0.35; if(params.ADI_home>2.0||params.ADI_away>2.0) base+=0.4; if(params.GPI>1.5) base+=0.4; if(params.formVariance>0.9) base+=0.25; if(params.competition && (params.competition.toLowerCase().includes('cup')||params.competition.toLowerCase().includes('uefa')||params.competition.toLowerCase().includes('intl'))) base+=0.5; if(params.lineupRisk) base+=0.6; return Math.min(4.0,Math.max(1.0,base)); }
+function renderInjuries() {
+  document.getElementById('injuries_home').innerHTML = injuries.home.map(i=>`• ${i.role}`).join('<br>');
+  document.getElementById('injuries_away').innerHTML = injuries.away.map(i=>`• ${i.role}`).join('<br>');
+}
 
-function monteCarloScores(expHome,expAway,dispersionFactor,iterations=5000,maxGoalCap=12){ let tally={}, totalGoalsCounts={}; let homeWins=0,awayWins=0,draws=0,btts=0,extreme5plus=0; for(let it=0;it<iterations;it++){ let gh=sampleNegBinom(expHome,dispersionFactor); let ga=sampleNegBinom(expAway,dispersionFactor); if(gh>maxGoalCap) gh=maxGoalCap; if(ga>maxGoalCap) ga=maxGoalCap; let key=gh+"-"+ga; tally[key]=(tally[key]||0)+1; let tg=gh+ga; totalGoalsCounts[tg]=(totalGoalsCounts[tg]||0)+1; if(gh>ga) homeWins++; else if(ga>gh) awayWins++; else draws++; if(gh>0 && ga>0) btts++; if(tg>=5) extreme5plus++; } let scores=Object.keys(tally).map(k=>({skor:k,prob:tally[k]/iterations})).sort((a,b)=>b.prob-a.prob); let goalsDist=Object.keys(totalGoalsCounts).map(g=>({goals:Number(g),prob:totalGoalsCounts[g]/iterations})).sort((a,b)=>a.goals-b.goals); return {scores,goalsDist,probs:{homeWin:homeWins/iterations,awayWin:awayWins/iterations,draw:draws/iterations,BTTS:btts/iterations,extreme5plus:extreme5plus/iterations,over25:goalsDist.filter(x=>x.goals>2.5).reduce((s,x)=>s+x.prob,0),over35:goalsDist.filter(x=>x.goals>3.5).reduce((s,x)=>s+x.prob,0)}} }
+function autoSquadDepth(gf, ga) {
+  let sdi = 1.0 + ((gf - ga) / 4);
+  return Math.max(0.6, Math.min(1.8, sdi));
+}
 
-function impliedProb(decimalOdds){ if(!decimalOdds||decimalOdds<=1) return 0; return 1/decimalOdds }
-function marketTrapV3(modelProbs,odds){ let impOver=impliedProb(odds.overOdds), impUnder=impliedProb(odds.underOdds); let sumOU=impOver+impUnder; if(sumOU>0){impOver/=sumOU;impUnder/=sumOU;} let ouDiff=Math.abs(modelProbs.over25-impOver); let note=''; if(ouDiff>0.18) note='⚠️ Strong market mismatch — cek lineup/berita (possible trap)'; else if(ouDiff>0.10) note='⚠️ Market discrepancy detected — verify news/lineup'; return {ouDiff,note,imp:{over:impOver,under:impUnder}} }
-function calibrateConfidence(baseConfidence,flags){ let conf=baseConfidence; if(flags.h2hMissing) conf-=7; if(flags.formMissingCount>=3) conf-=6; if(flags.oddsMismatch>0.15) conf-=12; if(flags.extremeRisk>0.20 && flags.recommendation==='Under') conf-=14; conf=Math.max(18,Math.min(92,conf)); return Math.round(conf*10)/10 }
+function applyInjuryV4(expHome, expAway, compFactor=1.0, oppFactor=1.0, locFactor=1.0) {
+  let hOV=0, hDV=0, aOV=0, aDV=0;
+  injuries.home.forEach(it=>{ let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; hOV+=r.OV; hDV+=r.DV; });
+  injuries.away.forEach(it=>{ let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; aOV+=r.OV; aDV+=r.DV; });
 
-// ===== Main analysis =====
-function analisis(){ const home=document.getElementById('home').value||'Home'; const away=document.getElementById('away').value||'Away'; let home_league_gf=safeNum(document.getElementById('home_gf').value,1.0); let home_league_ga=safeNum(document.getElementById('home_ga').value,1.0); let away_league_gf=safeNum(document.getElementById('away_gf').value,1.0); let away_league_ga=safeNum(document.getElementById('away_ga').value,1.0); let home_form_gf=safeNum(document.getElementById('home_form_gf')?document.getElementById('home_form_gf').value:null,null); let away_form_gf=safeNum(document.getElementById('away_form_gf')?document.getElementById('away_form_gf').value:null,null); let form_available=!(home_form_gf===null&&away_form_gf===null); let h2h_home_gf=safeNum(document.getElementById('h2h_home_gf').value,null); let h2h_away_gf=safeNum(document.getElementById('h2h_away_gf').value,null); let h2h_available=!(h2h_home_gf===null&&h2h_away_gf===null); let odds_over=safeNum(document.getElementById('odds_over').value,null); let odds_under=safeNum(document.getElementById('odds_under').value,null); let ou_line=safeNum(document.getElementById('ou_line').value,3.0); let competition=document.getElementById('competition').value||''; let squad_depth_home=safeNum(document.getElementById('squad_depth_home').value,1.0); let squad_depth_away=safeNum(document.getElementById('squad_depth_away').value,1.0);
+  let factor = compFactor*oppFactor*locFactor;
+  expHome = expHome*(1-hOV*factor)+aDV*factor;
+  expAway = expAway*(1-aOV*factor)+hDV*factor;
 
- let formVariance=0.4; if(form_available){ let hf=home_form_gf||home_league_gf; let af=away_form_gf||away_league_gf; let varHome=Math.abs(hf-home_league_gf); let varAway=Math.abs(af-away_league_gf); formVariance=Math.min(2.5,(varHome+varAway)/1.0); }
+  return {expHome,expAway};
+}
 
- let weights={league:0.6,form:0.25,h2h:0.15}; let params={weights:weights,h2h_available:h2h_available,form_available:form_available,home_league_gf:home_league_gf,home_league_ga:home_league_ga,away_league_gf:away_league_gf,away_league_ga:away_league_ga,home_form_gf:home_form_gf||home_league_gf,home_form_ga:home_league_ga,away_form_gf:away_form_gf||away_league_gf,away_form_ga:away_league_ga,home_h2h_gf:h2h_home_gf||home_league_gf*0.3,home_h2h_ga:home_league_ga*0.3,away_h2h_gf:h2h_away_gf||away_league_gf*0.3,away_h2h_ga:away_league_ga*0.3,contextBoostHome:0,contextBoostAway:0}; if(competition && (competition.toLowerCase().includes('cup')||competition.toLowerCase().includes('uefa')||competition.toLowerCase().includes('intl'))){ params.contextBoostHome+=0.15; params.contextBoostAway+=0.15; }
+const squadMode = document.getElementById('squad_mode');
+squadMode.addEventListener('change', ()=>{
+  document.getElementById('manual_squad_inputs').style.display = (squadMode.value==='manual') ? 'block' : 'none';
+});
 
- let eg=computeExpGoals(params); let ADI_home=(params.home_league_gf/(params.away_league_ga||1)); let ADI_away=(params.away_league_gf/(params.home_league_ga||1)); let GPI=(eg.homeAttack+eg.awayAttack)-(eg.homeDefense+eg.awayDefense);
+function getConfidenceClass(conf){
+  if(conf>=60) return 'conf-high';
+  if(conf>=30) return 'conf-med';
+  if(conf>0) return 'conf-low';
+  return '';
+}
 
- // apply injury adjustments
- let compFactor = (competition && competition.toLowerCase().includes('cup'))?1.2:1.0; let oppFactor=1.0, locFactor=1.0; let injRes=applyInjuryV4(eg.expHome,eg.expAway,compFactor,oppFactor,locFactor); let expHome=injRes.expHome, expAway=injRes.expAway; 
+function simulateScores(lambdaHome, lambdaAway, n=5000){
+  let results = {};
+  function poissonSample(lambda){
+    let L=Math.exp(-lambda), k=0, p=1;
+    do {k++; p*=Math.random();} while(p>L);
+    return k-1;
+  }
+  for(let i=0;i<n;i++){
+    let h=poissonSample(lambdaHome);
+    let a=poissonSample(lambdaAway);
+    let key=h+"-"+a;
+    results[key]=(results[key]||0)+1;
+  }
+  let arr=Object.entries(results).map(([score,cnt])=>({score,prob:cnt/n}));
+  arr.sort((a,b)=>b.prob-a.prob);
+  return arr.slice(0,6);
+}
 
- // dispersion
- let disp = dynamicDispersion({ADI_home:ADI_home,ADI_away:ADI_away,GPI:GPI,formVariance:formVariance,competition:competition,lineupRisk:injRes.startersOut}); disp += injRes.dispBoost||0; disp = Math.min(4.0,disp);
+function analisis(){
+  let teamHome = document.getElementById('team_home').value;
+  let teamAway = document.getElementById('team_away').value;
 
- // Monte Carlo
- let ITER = 5000; let mc = monteCarloScores(expHome,expAway,disp,ITER,12); let topScores = mc.scores.slice(0,6).map(s=>`${s.skor} (${(s.prob*100).toFixed(1)}%)`).join(', ');
+  let gfHome = parseFloat(document.getElementById('gf_home').value)||0;
+  let gaHome = parseFloat(document.getElementById('ga_home').value)||0;
+  let gfAway = parseFloat(document.getElementById('gf_away').value)||0;
+  let gaAway = parseFloat(document.getElementById('ga_away').value)||0;
 
- let modelProbs = {homeWin:mc.probs.homeWin,awayWin:mc.probs.awayWin,draw:mc.probs.draw,over25:mc.probs.over25,over35:mc.probs.over35,BTTS:mc.probs.BTTS,extreme5plus:mc.probs.extreme5plus};
- let trap = marketTrapV3(modelProbs,{overOdds:odds_over,underOdds:odds_under});
+  let h2hHome = parseFloat(document.getElementById('h2h_home').value)||0;
+  let h2hAway = parseFloat(document.getElementById('h2h_away').value)||0;
+  let formHome = parseFloat(document.getElementById('form_home').value)||0;
+  let formAway = parseFloat(document.getElementById('form_away').value)||0;
 
- // recommendation logic O/U
- let rekom_ou='No Bet'; let raw_conf=60; if(modelProbs.over25>0.66){ rekom_ou=`Over ${ou_line}`; raw_conf = 70 + (modelProbs.over25 - 0.66)*40; } else if(modelProbs.over25<0.40 && modelProbs.extreme5plus<0.12){ rekom_ou=`Under ${ou_line}`; raw_conf = 68 + (0.40 - modelProbs.over25)*50; } else{ rekom_ou='No Bet'; raw_conf=50; }
- // HDP simple (use model 1X2)
- let rekom_hdp='No Bet'; let hdp_conf=50; if(modelProbs.homeWin>modelProbs.awayWin+0.12 && safeNum(document.getElementById('hdp_line')?document.getElementById('hdp_line').value:null,null)!==null){ rekom_hdp = `${home} -${document.getElementById('hdp_line')?document.getElementById('hdp_line').value:'line'}`; hdp_conf=68 + (modelProbs.homeWin*25); } else if(modelProbs.awayWin>modelProbs.homeWin+0.12 && safeNum(document.getElementById('hdp_line')?document.getElementById('hdp_line').value:null,null)!==null){ rekom_hdp = `${away} -${document.getElementById('hdp_line')?document.getElementById('hdp_line').value:0}`; hdp_conf=68 + (modelProbs.awayWin*25); }
+  let lineOU = parseFloat(document.getElementById('line_ou').value)||2.5;
+  let oddsOver = parseFloat(document.getElementById('odds_over').value)||0;
+  let oddsUnder = parseFloat(document.getElementById('odds_under').value)||0;
 
- // confidence
- let flags={h2hMissing:!h2h_available,formMissingCount:(!form_available?3:0),oddsMismatch:trap.ouDiff,extremeRisk:mc.probs.extreme5plus,recommendation:rekom_ou}; let final_ou_conf = calibrateConfidence(raw_conf,flags); let final_hdp_conf = calibrateConfidence(hdp_conf,flags);
+  let squadDepthHome, squadDepthAway;
+  if (squadMode.value === 'auto') {
+    squadDepthHome = autoSquadDepth(gfHome, gaHome);
+    squadDepthAway = autoSquadDepth(gfAway, gaAway);
+  } else {
+    squadDepthHome = parseFloat(document.getElementById('squad_home_manual').value)||1.0;
+    squadDepthAway = parseFloat(document.getElementById('squad_away_manual').value)||1.0;
+  }
 
- // narrative
- let narrative=''; if(ADI_home>ADI_away) narrative+=`${home} lebih unggul secara ADI. `; if(GPI>1.5) narrative+='Pertandingan cenderung terbuka (GPI tinggi). '; if(mc.probs.extreme5plus>0.18) narrative+='⚠️ Risiko skor ekstrem (5+ gol) cukup tinggi. '; if(trap.note) narrative+=trap.note+' ';
+  let expHome = (gfHome+ (h2hHome||gfHome) + (formHome||gfHome))/3;
+  let expAway = (gfAway+ (h2hAway||gfAway) + (formAway||gfAway))/3;
 
- // assemble output
- let out = `<h3>${home} vs ${away}</h3>`;
- out += `<div class="card">🔢 ExpGoals → Home: ${expHome.toFixed(2)} | Away: ${expAway.toFixed(2)} | Total: ${(expHome+expAway).toFixed(2)}<br>`;
- out += `📊 ADI Home: ${ADI_home.toFixed(2)} | ADI Away: ${ADI_away.toFixed(2)} | GPI: ${GPI.toFixed(2)}<br>`;
- out += `🧪 Dispersion factor: ${disp.toFixed(2)} | MonteCarlo sims: ${ITER}<br>`;
- out += `🎯 Probabilities → Over${ou_line}: ${(modelProbs.over25*100).toFixed(1)}% | Over3.5: ${(modelProbs.over35*100).toFixed(1)}% | BTTS: ${(modelProbs.BTTS*100).toFixed(1)}% | Skor 5+ gol: ${(modelProbs.extreme5plus*100).toFixed(1)}%<br>`;
- out += `📈 Top scores: ${topScores}<br>`;
- out += `📝 Narasi: ${narrative}</div>`;
- out += `<div class="${final_hdp_conf>=75?'high':final_hdp_conf>=65?'moderate':'low'}">👉 HDP: <b>${rekom_hdp}</b> (${final_hdp_conf}%)</div>`;
- out += `<div class="${final_ou_conf>=75?'high':final_ou_conf>=65?'moderate':'low'}" style="margin-top:8px">👉 O/U: <b>${rekom_ou}</b> (${final_ou_conf}%)</div>`;
- if(trap.note) out += `<div class="card" style="background:#fff7e6;border-left:6px solid #ff9800;margin-top:8px">${trap.note}</div>`;
- out += `<div class="card small" style="margin-top:10px">Injury impact (home): ${injuries.home.length} | (away): ${injuries.away.length}. SquadDepth H:${squad_depth_home} A:${squad_depth_away}</div>`;
- document.getElementById('output').innerHTML = out; }
+  let adj = applyInjuryV4(expHome, expAway);
+  expHome = adj.expHome; expAway = adj.expAway;
 
-// initial render lists
-renderInjuryList('home'); renderInjuryList('away');
+  let total = expHome+expAway;
+  let pOver = total / (lineOU+0.5);
+  pOver = Math.max(0, Math.min(1, pOver));
+  let pUnder = 1 - pOver;
+  let pBTTS = Math.min(1, (expHome/2 + expAway/2)/1.5);
+
+  let hdpLine = (expHome - expAway).toFixed(2);
+  let fav = expHome>expAway ? teamHome : teamAway;
+
+  let impliedOver = oddsOver>0 ? 1/oddsOver : 0;
+  let impliedUnder = oddsUnder>0 ? 1/oddsUnder : 0;
+  let sumImp = impliedOver+impliedUnder;
+  if(sumImp>0){ impliedOver/=sumImp; impliedUnder/=sumImp; }
+
+  function confidence(prob, implied){
+    return Math.abs(prob - implied) * 100;
+  }
+
+  let rekOU = "❌ No Bet";
+  let confOU = 0;
+  if(pOver - impliedOver > 0.08){ rekOU = "🔥 Over "+lineOU; confOU = confidence(pOver, impliedOver); }
+  else if(pUnder - impliedUnder > 0.08){ rekOU = "🔥 Under "+lineOU; confOU = confidence(pUnder, impliedUnder); }
+
+  let rekBTTS = "❌ No Bet", confBTTS=0;
+  if(pBTTS>0.55){ rekBTTS = "🔥 BTTS: YES"; confBTTS = (pBTTS-0.5)*200; }
+  else if(pBTTS<0.45){ rekBTTS = "🔥 BTTS: NO"; confBTTS = (0.5-pBTTS)*200; }
+
+  let rekHDP = "❌ Hindari HDP (imbang)", confHDP=0;
+  if(Math.abs(expHome-expAway)>=0.25){
+    rekHDP = `🔥 HDP: ${fav} -${Math.abs(hdpLine)}`;
+    confHDP = Math.abs(expHome-expAway)*50;
+  }
+
+  let trapMsg = "";
+  if (pOver > impliedOver && rekOU.includes("Under")) {
+    trapMsg = "<div class='trap'>⚠️🔒 Potensi Trap: Market condong ke Over, model rekomendasi Under → Hindari bet besar!</div>";
+  }
+  if (pUnder > impliedUnder && rekOU.includes("Over")) {
+    trapMsg = "<div class='trap'>⚠️🔒 Potensi Trap: Market condong ke Under, model rekomendasi Over → Hindari bet besar!</div>";
+  }
+
+  let warningMsg = "";
+  if(confOU<25 && confBTTS<25 && confHDP<25){
+    warningMsg = '<div class="warning">⚠️ Semua rekomendasi confidence rendah → Hindari pertandingan ini!</div>';
+  }
+
+  let sims = simulateScores(expHome, expAway, 5000);
+  let simTable = '<table class="sim-table"><tr><th>Skor</th><th>Probabilitas</th></tr>' +
+    sims.map(s=>`<tr><td>${s.score}</td><td>${(s.prob*100).toFixed(1)}%</td></tr>`).join('') + '</table>';
+
+  document.getElementById('output').innerHTML = `
+    <h3>${teamHome} vs ${teamAway}</h3>
+    <p>⚽ ExpGoals → Home: ${expHome.toFixed(2)} | Away: ${expAway.toFixed(2)}</p>
+    <p>📊 Rekomendasi O/U: ${rekOU} (<span class='${getConfidenceClass(confOU)}'>Conf: ${confOU.toFixed(1)}%</span>)</p>
+    <p>🤝 Rekomendasi BTTS: ${rekBTTS} (<span class='${getConfidenceClass(confBTTS)}'>Conf: ${confBTTS.toFixed(1)}%</span>)</p>
+    <p>🎯 Rekomendasi HDP: ${rekHDP} (<span class='${getConfidenceClass(confHDP)}'>Conf: ${confHDP.toFixed(1)}%</span>)</p>
+    ${trapMsg}
+    ${warningMsg}
+    <h4>🔮 Simulasi Skor (Top 6)</h4>
+    ${simTable}
+  `;
+}
 </script>
 </body>
-  </html>
+</html>
