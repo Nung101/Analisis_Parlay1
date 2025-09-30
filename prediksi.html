@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Prediksi Parlay Analyzer - Versi Ultimate</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    h1 { text-align: center; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 900px; margin: auto; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input { padding: 5px; margin: 5px 0; width: 120px; }
+    button { margin-top: 15px; padding: 10px 15px; cursor: pointer; }
+    pre { background: #222; color: #0f0; padding: 15px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Prediksi Parlay Analyzer ⚽</h1>
+
+    <label>Home Team</label>
+    <input id="home" placeholder="Home Team">
+
+    <label>Away Team</label>
+    <input id="away" placeholder="Away Team">
+
+    <label>Home GF | Home GA</label>
+    <input id="home_gf" type="number" step="0.01">
+    <input id="home_ga" type="number" step="0.01">
+
+    <label>Away GF | Away GA</label>
+    <input id="away_gf" type="number" step="0.01">
+    <input id="away_ga" type="number" step="0.01">
+
+    <label>H2H Home GF | H2H Home GA</label>
+    <input id="h2h_home_gf" type="number" step="0.01">
+    <input id="h2h_home_ga" type="number" step="0.01">
+
+    <label>H2H Away GF | H2H Away GA</label>
+    <input id="h2h_away_gf" type="number" step="0.01">
+    <input id="h2h_away_ga" type="number" step="0.01">
+
+    <label>Rata-rata Goals H2H</label>
+    <input id="avgH2HGoals" type="number" step="0.01">
+
+    <label>SBI (Strength Balance Index)</label>
+    <input id="SBI" type="number" step="0.01">
+
+    <label>Line HDP | Odds Home | Odds Away</label>
+    <input id="hdp_line" type="number" step="0.25">
+    <input id="odds_hdp_home" type="number" step="0.01">
+    <input id="odds_hdp_away" type="number" step="0.01">
+
+    <label>Line O/U | Odds Over | Odds Under</label>
+    <input id="ou_line" type="number" step="0.25">
+    <input id="odds_over" type="number" step="0.01">
+    <input id="odds_under" type="number" step="0.01">
+
+    <button onclick="analisis()">Analisis</button>
+
+    <h2>Hasil Analisis</h2>
+    <pre id="output"></pre>
+  </div>
+
+<script>
+// Fungsi Poisson
+function poisson(lambda, k) {
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+}
+function factorial(n) { return n ? n * factorial(n - 1) : 1; }
+
+function analisis() {
+  const home = document.getElementById("home").value;
+  const away = document.getElementById("away").value;
+
+  const home_gf = parseFloat(document.getElementById("home_gf").value);
+  const home_ga = parseFloat(document.getElementById("home_ga").value);
+  const away_gf = parseFloat(document.getElementById("away_gf").value);
+  const away_ga = parseFloat(document.getElementById("away_ga").value);
+
+  const h2h_home_gf = parseFloat(document.getElementById("h2h_home_gf").value);
+  const h2h_home_ga = parseFloat(document.getElementById("h2h_home_ga").value);
+  const h2h_away_gf = parseFloat(document.getElementById("h2h_away_gf").value);
+  const h2h_away_ga = parseFloat(document.getElementById("h2h_away_ga").value);
+
+  const avgH2HGoals = parseFloat(document.getElementById("avgH2HGoals").value);
+  const SBI = parseFloat(document.getElementById("SBI").value);
+
+  const hdp_line = parseFloat(document.getElementById("hdp_line").value);
+  const odds_hdp_home = parseFloat(document.getElementById("odds_hdp_home").value);
+  const odds_hdp_away = parseFloat(document.getElementById("odds_hdp_away").value);
+
+  const ou_line = parseFloat(document.getElementById("ou_line").value);
+  const odds_over = parseFloat(document.getElementById("odds_over").value);
+  const odds_under = parseFloat(document.getElementById("odds_under").value);
+
+  // Attack & Defense (versi tajam)
+  const homeAttack = (home_gf * 0.5 + h2h_home_gf * 0.3) * (home_gf > home_ga ? 1.2 : 0.95);
+  const homeDefense = (home_ga * 0.5 + h2h_home_ga * 0.3);
+
+  const awayAttack = (away_gf * 0.5 + h2h_away_gf * 0.3) * (away_gf > away_ga ? 1.15 : 0.9);
+  const awayDefense = (away_ga * 0.5 + h2h_away_ga * 0.3);
+
+  // Expected Goals (hybrid + baseline liga)
+  const leagueAvg = 2.6;
+  const expHome = (homeAttack * (1/(awayDefense||1)) + homeAttack + (leagueAvg/2)) / 3;
+  const expAway = (awayAttack * (1/(homeDefense||1)) + awayAttack + (leagueAvg/2)) / 3;
+  const totalGoals = expHome + expAway;
+
+  // Probabilitas menang
+  const probHomeWin = expHome / (expHome + expAway);
+  const probAwayWin = 1 - probHomeWin;
+  const probDraw = 1 - (probHomeWin + probAwayWin);
+
+  // --- HDP ---
+  let rekom_hdp = "No Bet", hdp_conf = 55;
+  const oddsGapHDP = Math.abs(odds_hdp_home - odds_hdp_away);
+  let drawPenalty = probDraw > 0.25 ? 8 : 0;
+
+  if (probHomeWin > 0.55 && odds_hdp_home < 2.10) {
+    rekom_hdp = `${home} ${hdp_line}`;
+    let base = probHomeWin * 100;
+    hdp_conf = Math.min(96, Math.max(50, base + (SBI*10) - (odds_hdp_home*3) - (oddsGapHDP*3) - drawPenalty));
+  } else if (probAwayWin > 0.55 && odds_hdp_away < 2.10) {
+    rekom_hdp = `${away} +${Math.abs(hdp_line)}`;
+    let base = probAwayWin * 100;
+    hdp_conf = Math.min(96, Math.max(50, base + (Math.abs(SBI)*10) - (odds_hdp_away*3) - (oddsGapHDP*3) - drawPenalty));
+  }
+
+  // --- O/U ---
+  let probOver = 0, probUnder = 0, probExact = 0;
+  for (let g=0; g<=10; g++) {
+    const p = poisson(totalGoals, g);
+    if (g > ou_line) probOver += p;
+    else if (g < ou_line) probUnder += p;
+    else probExact += p;
+  }
+
+  let rekom_ou = "No Bet", ou_conf = 55;
+  const oddsGapOU = Math.abs(odds_over - odds_under);
+  let h2hFactor = (avgH2HGoals > 2.6 && probOver > probUnder) ? 5 : 
+                  (avgH2HGoals < 2.2 && probUnder > probOver) ? 5 : 0;
+
+  if (probOver > 0.55 && odds_over < 2.10) {
+    rekom_ou = `Over ${ou_line}`;
+    let base = probOver*100;
+    ou_conf = Math.min(96, Math.max(50, base + h2hFactor - (odds_over*3) - (oddsGapOU*3)));
+  } else if (probUnder > 0.55 && odds_under < 2.10) {
+    rekom_ou = `Under ${ou_line}`;
+    let base = probUnder*100;
+    ou_conf = Math.min(96, Math.max(50, base + h2hFactor - (odds_under*3) - (oddsGapOU*3)));
+  }
+
+  let riskNote = probExact > 0.15 
+    ? `⚠️ Potensi push/jebakan di line ${ou_line} (≈${(probExact*100).toFixed(1)}%)`
+    : "";
+
+  // --- BTTS ---
+  const probHomeScored = 1 - poisson(expHome, 0);
+  const probAwayScored = 1 - poisson(expAway, 0);
+  const probBTTS = probHomeScored * probAwayScored;
+
+  let boostBTTS = (expHome > 1 && expAway > 1) ? 7 : 0;
+  const rekom_btts = probBTTS > 0.55 ? "BTTS Yes" : "BTTS No";
+  const btts_conf = Math.min(96, Math.max(50, (probBTTS*100) + boostBTTS));
+
+  // --- Trap Detector ---
+  let trapNote = "";
+  const impliedOver = 1 / odds_over;
+  const impliedUnder = 1 / odds_under;
+
+  if (Math.abs(odds_over - odds_under) < 0.1) {
+    trapNote = "⚠️ Odds O/U terlalu rapat → indikasi pasar tidak seimbang.";
+  } else if ((probOver > 0.6 && impliedOver < impliedUnder) ||
+             (probUnder > 0.6 && impliedUnder < impliedOver)) {
+    trapNote = "⚠️ Prediksi model bertentangan dengan odds pasar → potensi jebakan!";
+  }
+
+  // --- Output ---
+  document.getElementById("output").textContent = `
+📊 Prediksi Pertandingan: ${home} vs ${away}
+
+⚽ Expected Goals:
+   ${home}: ${expHome.toFixed(2)}
+   ${away}: ${expAway.toFixed(2)}
+   Total: ${totalGoals.toFixed(2)}
+
+🎯 HDP:
+   Rekomendasi: ${rekom_hdp}
+   Confidence: ${hdp_conf.toFixed(1)}%
+
+📈 Over/Under:
+   Rekomendasi: ${rekom_ou}
+   Confidence: ${ou_conf.toFixed(1)}%
+   ${riskNote}
+
+🔗 BTTS:
+   Rekomendasi: ${rekom_btts}
+   Confidence: ${btts_conf.toFixed(1)}%
+
+⚠️ Trap Detector:
+   ${trapNote || "Tidak ada indikasi aneh."}
+`;
+}
+</script>
+</body>
+</html>
