@@ -1,272 +1,263 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analisis Parlay Ultra</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 15px; }
-    h2 { margin-top: 20px; }
-    .input-group { margin-bottom: 10px; }
-    label { display: block; font-weight: bold; margin-bottom: 4px; }
-    input, select { width: 100%; padding: 6px; margin-bottom: 8px; }
-    button { padding: 10px 20px; font-weight: bold; margin-top: 10px; }
-    #output { border: 1px solid #ccc; padding: 15px; margin-top: 20px; background: #f9f9f9; }
-    .injury-list { margin: 5px 0; font-size: 14px; }
-    .tooltip { font-size: 13px; color: #555; margin-top: -5px; margin-bottom: 8px; }
-    .conf-low { color: red; font-weight: bold; }
-    .conf-med { color: orange; font-weight: bold; }
-    .conf-high { color: green; font-weight: bold; }
-    .warning { color: red; font-weight: bold; margin-top: 10px; }
-    .trap { color: darkred; font-weight: bold; margin-top: 8px; background: #ffe0e0; padding: 6px; border-radius: 5px; }
-    .sim-table { border-collapse: collapse; margin-top: 10px; }
-    .sim-table th, .sim-table td { border: 1px solid #ccc; padding: 4px 6px; font-size: 13px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Analisis Parlay Ultra</title>
+<style>
+  body{font-family:Inter,system-ui,Arial,sans-serif;padding:18px;background:#f6f7fb;color:#111}
+  h1{margin:0 0 12px;font-size:20px}
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  .card{background:white;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(20,20,50,0.06)}
+  label{font-weight:600;font-size:13px;display:block;margin-top:8px}
+  input[type=number], input[type=text], select{width:100%;padding:8px;border:1px solid #d6d8e0;border-radius:6px}
+  button{background:#2563eb;color:white;border:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:10px}
+  .muted{color:#666;font-size:13px}
+  .small{font-size:13px}
+  #output{margin-top:12px}
+  .conf-high{color:green;font-weight:800}
+  .conf-med{color:orange;font-weight:800}
+  .conf-low{color:red;font-weight:800}
+  .trap{background:#fff0f0;border:1px solid #ffc9c9;padding:8px;border-radius:6px;color:#8b0000;font-weight:700;margin-top:8px}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{padding:6px;border:1px solid #eee;text-align:left;font-size:13px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#303f9f;font-weight:700;font-size:12px}
+  .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .footer{margin-top:14px;font-size:13px;color:#444}
+  .col{margin-bottom:6px}
+</style>
 </head>
 <body>
-  <h2>Analisis Parlay — Ultra (ExpG + ADI + H2H + Injury + Market Trap)</h2>  <div class="input-group">
+<h1>Analisis Parlay — Ultra (ExpG • ADI • HDP • Trap • MC)</h1>
+<div class="grid">
+  <div class="card">
     <label>Tim Home</label>
-    <input type="text" id="team_home" placeholder="Contoh: Djurgarden">
+    <input id="team_home" type="text" placeholder="Contoh: Lille" value="Lille">
     <label>Tim Away</label>
-    <input type="text" id="team_away" placeholder="Contoh: IK Sirius">
-  </div>  <div class="input-group">
-    <label>Rata2 Gol Home (GF/90)</label>
-    <input type="number" step="0.01" id="gf_home">
-    <label>Rata2 Kebobolan Home (GA/90)</label>
-    <input type="number" step="0.01" id="ga_home">
-    <label>Rata2 Gol Away (GF/90)</label>
-    <input type="number" step="0.01" id="gf_away">
-    <label>Rata2 Kebobolan Away (GA/90)</label>
-    <input type="number" step="0.01" id="ga_away">
-  </div>  <div class="input-group">
-    <label>H2H Home GF (avg per match) — kosong kalau tidak ada</label>
-    <input type="number" step="0.01" id="h2h_home">
-    <label>H2H Away GF (avg per match) — kosong kalau tidak ada</label>
-    <input type="number" step="0.01" id="h2h_away">
-  </div>  <div class="input-group">
-    <label>Form Home GF (avg 5 matches) — opsional</label>
-    <input type="number" step="0.01" id="form_home">
-    <label>Form Away GF (avg 5 matches) — opsional</label>
-    <input type="number" step="0.01" id="form_away">
-  </div>  <div class="input-group">
-    <label>Line O/U (contoh: 2.5 atau 3.0)</label>
-    <input type="number" step="0.1" id="line_ou">
-    <label>Odds Over (decimal)</label>
-    <input type="number" step="0.01" id="odds_over">
-    <label>Odds Under (decimal)</label>
-    <input type="number" step="0.01" id="odds_under">
-    <label>Competition (league / cup / ucl / uefa)</label>
-    <input type="text" id="competition">
-  </div>  <div class="input-group">
-    <label>Mode Squad Depth</label>
+    <input id="team_away" type="text" placeholder="Contoh: Lyon" value="Lyon">
+
+    <h3 class="small">Statistik (Home / Away split)</h3>
+    <label>GF Home (avg kandang)</label>
+    <input id="gf_home" type="number" step="0.01" value="1.6">
+    <label>GA Home (avg kandang)</label>
+    <input id="ga_home" type="number" step="0.01" value="0.9">
+    <label>GF Away (avg tandang)</label>
+    <input id="gf_away" type="number" step="0.01" value="1.2">
+    <label>GA Away (avg tandang)</label>
+    <input id="ga_away" type="number" step="0.01" value="1.5">
+
+    <h3 class="small">Form & H2H (opsional)</h3>
+    <label>Form Home GF (5 laga)</label>
+    <input id="form_home" type="number" step="0.01">
+    <label>Form Away GF (5 laga)</label>
+    <input id="form_away" type="number" step="0.01">
+    <label>H2H GF Home</label>
+    <input id="h2h_home" type="number" step="0.01">
+    <label>H2H GF Away</label>
+    <input id="h2h_away" type="number" step="0.01">
+
+    <h3 class="small">Odds Over/Under</h3>
+    <label>Line O/U</label>
+    <input id="line_ou" type="number" step="0.25" value="2.5">
+    <label>Odds Over</label>
+    <input id="odds_over" type="number" step="0.01" value="1.90">
+    <label>Odds Under</label>
+    <input id="odds_under" type="number" step="0.01" value="1.95">
+
+    <h3 class="small">Handicap (HDP)</h3>
+    <label>Line HDP</label>
+    <input id="line_hdp" type="number" step="0.25" value="-0.25">
+    <label>Odds HDP Home</label>
+    <input id="odds_hdp_home" type="number" step="0.01" value="1.92">
+    <label>Odds HDP Away</label>
+    <input id="odds_hdp_away" type="number" step="0.01" value="1.98">
+
+    <h3 class="small">Competition</h3>
+    <input id="competition" type="text" placeholder="league / cup / ucl / uefa" value="league">
+
+    <h3 class="small">Squad Depth</h3>
     <select id="squad_mode">
-      <option value="auto">Auto (default, hitung otomatis)</option>
-      <option value="manual">Manual (isi sendiri)</option>
+      <option value="auto">Auto</option>
+      <option value="manual">Manual</option>
     </select>
-    <div id="manual_squad_inputs" style="display:none;">
-      <label>Squad Depth Home (0.6 - 1.8)</label>
-      <input type="number" step="0.1" id="squad_home_manual">
-      <div class="tooltip">0.6–0.9 = tim lemah / kedalaman tipis • 1.0–1.2 = tim normal • 1.3–1.8 = tim besar / banyak rotasi</div>
-      <label>Squad Depth Away (0.6 - 1.8)</label>
-      <input type="number" step="0.1" id="squad_away_manual">
-      <div class="tooltip">Gunakan range yang sama. Jika ragu, biarkan Auto.</div>
-    </div>
-  </div>  <div class="input-group">
-    <label>Injury Manager (pilih role lalu Add injury)</label>
-    <div>
-      <select id="role_home">
-        <option value="rotation">Rotation / Pelapis</option>
-        <option value="starter">Starter Reguler</option>
-        <option value="key">Key Player</option>
-        <option value="goalkeeper">Goalkeeper</option>
-        <option value="def_core">Def Core</option>
-        <option value="mid_core">Mid Core</option>
-        <option value="striker_core">Striker Core</option>
-      </select>
-      <button onclick="addInjury('home')">Add Injury Home</button>
-      <div id="injuries_home" class="injury-list"></div>
-    </div>
-    <div>
-      <select id="role_away">
-        <option value="rotation">Rotation / Pelapis</option>
-        <option value="starter">Starter Reguler</option>
-        <option value="key">Key Player</option>
-        <option value="goalkeeper">Goalkeeper</option>
-        <option value="def_core">Def Core</option>
-        <option value="mid_core">Mid Core</option>
-        <option value="striker_core">Striker Core</option>
-      </select>
-      <button onclick="addInjury('away')">Add Injury Away</button>
-      <div id="injuries_away" class="injury-list"></div>
-    </div>
-    <div class="tooltip">Tip: gunakan role sesuai posisi & pentingnya pemain. Cedera GK & striker inti berdampak besar.</div>
-  </div><button onclick="analisis()">Analisis Sekarang</button>
+    <input id="squad_home" type="number" step="0.1" placeholder="Home Depth (0.6–1.8)">
+    <input id="squad_away" type="number" step="0.1" placeholder="Away Depth (0.6–1.8)">
 
-  <div id="output"></div><script>
-let injuries = { home: [], away: [] };
+    <h3 class="small">Injury Manager Home</h3>
+    <select id="role_home">
+      <option value="rotation">Rotation</option>
+      <option value="starter">Starter</option>
+      <option value="key">Key Player</option>
+      <option value="goalkeeper">Goalkeeper</option>
+      <option value="def_core">Def Core</option>
+      <option value="mid_core">Mid Core</option>
+      <option value="striker_core">Striker Core</option>
+    </select>
+    <button onclick="addInjury('home')">Add Injury Home</button>
+    <div id="injuries_home"></div>
 
-const ROLE_IMPACT_V4 = {
-  rotation: {OV:0.02, DV:0.02},
-  starter: {OV:0.12, DV:0.10},
-  key: {OV:0.25, DV:0.20},
-  goalkeeper: {OV:0.00, DV:0.35},
-  def_core: {OV:0.03, DV:0.22},
-  mid_core: {OV:0.10, DV:0.10},
-  striker_core: {OV:0.22, DV:0.05}
-};
+    <h3 class="small">Injury Manager Away</h3>
+    <select id="role_away">
+      <option value="rotation">Rotation</option>
+      <option value="starter">Starter</option>
+      <option value="key">Key Player</option>
+      <option value="goalkeeper">Goalkeeper</option>
+      <option value="def_core">Def Core</option>
+      <option value="mid_core">Mid Core</option>
+      <option value="striker_core">Striker Core</option>
+    </select>
+    <button onclick="addInjury('away')">Add Injury Away</button>
+    <div id="injuries_away"></div>
 
-function addInjury(side) {
-  const role = document.getElementById(`role_${side}`).value;
-  injuries[side].push({ role });
+    <button onclick="analisis()">Analisis Sekarang</button>
+  </div>
+  <div class="card">
+    <h3>Hasil Analisis</h3>
+    <div id="output"></div>
+  </div>
+</div>
+
+<script>
+// Global injuries
+let injuryHome=[], injuryAway=[];
+function addInjury(side){
+  let role=document.getElementById("role_"+side).value;
+  if(side==="home"){injuryHome.push(role);}else{injuryAway.push(role);}
   renderInjuries();
 }
-
-function renderInjuries() {
-  document.getElementById('injuries_home').innerHTML = injuries.home.map(i=>`• ${i.role}`).join('<br>');
-  document.getElementById('injuries_away').innerHTML = injuries.away.map(i=>`• ${i.role}`).join('<br>');
+function renderInjuries(){
+  document.getElementById("injuries_home").innerHTML=injuryHome.join(", ");
+  document.getElementById("injuries_away").innerHTML=injuryAway.join(", ");
 }
 
-function autoSquadDepth(gf, ga) {
-  let sdi = 1.0 + ((gf - ga) / 4);
-  return Math.max(0.6, Math.min(1.8, sdi));
+// Confidence helper
+function confClass(v){
+  if(v>=65)return "conf-high";
+  if(v>=45)return "conf-med";
+  return "conf-low";
 }
 
-function applyInjuryV4(expHome, expAway, compFactor=1.0, oppFactor=1.0, locFactor=1.0) {
-  let hOV=0, hDV=0, aOV=0, aDV=0;
-  injuries.home.forEach(it=>{ let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; hOV+=r.OV; hDV+=r.DV; });
-  injuries.away.forEach(it=>{ let r=ROLE_IMPACT_V4[it.role]||{OV:0.05,DV:0.05}; aOV+=r.OV; aDV+=r.DV; });
-
-  let factor = compFactor*oppFactor*locFactor;
-  expHome = expHome*(1-hOV*factor)+aDV*factor;
-  expAway = expAway*(1-aOV*factor)+hDV*factor;
-
-  return {expHome,expAway};
+// Monte Carlo Poisson
+function poisson(lam,k){
+  return Math.pow(lam,k)*Math.exp(-lam)/factorial(k);
 }
-
-const squadMode = document.getElementById('squad_mode');
-squadMode.addEventListener('change', ()=>{
-  document.getElementById('manual_squad_inputs').style.display = (squadMode.value==='manual') ? 'block' : 'none';
-});
-
-function getConfidenceClass(conf){
-  if(conf>=60) return 'conf-high';
-  if(conf>=30) return 'conf-med';
-  if(conf>0) return 'conf-low';
-  return '';
-}
-
-function simulateScores(lambdaHome, lambdaAway, n=5000){
-  let results = {};
-  function poissonSample(lambda){
-    let L=Math.exp(-lambda), k=0, p=1;
-    do {k++; p*=Math.random();} while(p>L);
-    return k-1;
-  }
+function factorial(n){return n? n*factorial(n-1):1;}
+function monteCarlo(lambdaH,lambdaA,n=5000){
+  let dist={};
   for(let i=0;i<n;i++){
-    let h=poissonSample(lambdaHome);
-    let a=poissonSample(lambdaAway);
-    let key=h+"-"+a;
-    results[key]=(results[key]||0)+1;
+    let gH=poissonSample(lambdaH);
+    let gA=poissonSample(lambdaA);
+    let key=gH+"-"+gA;
+    dist[key]=(dist[key]||0)+1;
   }
-  let arr=Object.entries(results).map(([score,cnt])=>({score,prob:cnt/n}));
+  let arr=Object.entries(dist).map(([k,v])=>({score:k,prob:v/n}));
   arr.sort((a,b)=>b.prob-a.prob);
   return arr.slice(0,6);
 }
+function poissonSample(lambda){
+  let L=Math.exp(-lambda),k=0,p=1;
+  do{k++;p*=Math.random();}while(p>L);
+  return k-1;
+}
 
+// Injury impact
+function injuryImpact(arr){
+  let mult=1.0;
+  arr.forEach(r=>{
+    if(r==="rotation")mult*=0.98;
+    if(r==="starter")mult*=0.95;
+    if(r==="key")mult*=0.9;
+    if(r==="goalkeeper")mult*=0.88;
+    if(r==="def_core")mult*=0.9;
+    if(r==="mid_core")mult*=0.92;
+    if(r==="striker_core")mult*=0.85;
+  });
+  return mult;
+}
+
+// Analysis
 function analisis(){
-  let teamHome = document.getElementById('team_home').value;
-  let teamAway = document.getElementById('team_away').value;
+  let teamH=document.getElementById("team_home").value;
+  let teamA=document.getElementById("team_away").value;
+  let gfH=parseFloat(document.getElementById("gf_home").value||0);
+  let gaH=parseFloat(document.getElementById("ga_home").value||0);
+  let gfA=parseFloat(document.getElementById("gf_away").value||0);
+  let gaA=parseFloat(document.getElementById("ga_away").value||0);
 
-  let gfHome = parseFloat(document.getElementById('gf_home').value)||0;
-  let gaHome = parseFloat(document.getElementById('ga_home').value)||0;
-  let gfAway = parseFloat(document.getElementById('gf_away').value)||0;
-  let gaAway = parseFloat(document.getElementById('ga_away').value)||0;
+  let formH=parseFloat(document.getElementById("form_home").value||gfH);
+  let formA=parseFloat(document.getElementById("form_away").value||gfA);
+  let h2hH=parseFloat(document.getElementById("h2h_home").value||gfH);
+  let h2hA=parseFloat(document.getElementById("h2h_away").value||gfA);
 
-  let h2hHome = parseFloat(document.getElementById('h2h_home').value)||0;
-  let h2hAway = parseFloat(document.getElementById('h2h_away').value)||0;
-  let formHome = parseFloat(document.getElementById('form_home').value)||0;
-  let formAway = parseFloat(document.getElementById('form_away').value)||0;
+  let lineOU=parseFloat(document.getElementById("line_ou").value||2.5);
+  let oddsOver=parseFloat(document.getElementById("odds_over").value||2.0);
+  let oddsUnder=parseFloat(document.getElementById("odds_under").value||2.0);
 
-  let lineOU = parseFloat(document.getElementById('line_ou').value)||2.5;
-  let oddsOver = parseFloat(document.getElementById('odds_over').value)||0;
-  let oddsUnder = parseFloat(document.getElementById('odds_under').value)||0;
+  let lineHDP=parseFloat(document.getElementById("line_hdp").value||0);
+  let oddsHDPH=parseFloat(document.getElementById("odds_hdp_home").value||2.0);
+  let oddsHDPA=parseFloat(document.getElementById("odds_hdp_away").value||2.0);
 
-  let squadDepthHome, squadDepthAway;
-  if (squadMode.value === 'auto') {
-    squadDepthHome = autoSquadDepth(gfHome, gaHome);
-    squadDepthAway = autoSquadDepth(gfAway, gaAway);
-  } else {
-    squadDepthHome = parseFloat(document.getElementById('squad_home_manual').value)||1.0;
-    squadDepthAway = parseFloat(document.getElementById('squad_away_manual').value)||1.0;
+  let comp=document.getElementById("competition").value.toLowerCase();
+
+  let expH=(gfH+formH+h2hH)/3;
+  let expA=(gfA+formA+h2hA)/3;
+
+  // competition correction
+  if(["cup","ucl","uefa","knockout"].includes(comp)){
+    expH*=0.85;expA*=0.85;
+  }
+  // injury impact
+  expH*=injuryImpact(injuryHome);
+  expA*=injuryImpact(injuryAway);
+
+  let total=expH+expA;
+
+  // O/U rec
+  let impliedOver=1/oddsOver, impliedUnder=1/oddsUnder;
+  let pOver=(total/lineOU); if(pOver>1)pOver=1;
+  let pUnder=1-pOver;
+  let recOU=pOver>pUnder?"Over":"Under";
+  let confOU=Math.abs(pOver-pUnder)*100;
+
+  // BTTS
+  let recBTTS=(expH>0.9&&expA>0.9)?"YES":"NO";
+  let confBTTS=(Math.min(expH,expA)/Math.max(expH,expA))*100;
+
+  // HDP rec (simple: compare expG diff to line)
+  let diff=expH-expA;
+  let recHDP="No Bet";
+  if(diff>0.3)recHDP=teamH+" "+lineHDP;
+  else if(diff<-0.3)recHDP=teamA+" "+(-lineHDP);
+  let confHDP=Math.min(70,Math.abs(diff)*50);
+
+  // Trap Detector
+  let trap="";
+  if(pOver>impliedOver && recOU==="Under"){
+    trap="⚠️ Trap Over: Market ke Over, model bilang Under. Hindari Over.";
+  }
+  if(pUnder>impliedUnder && recOU==="Over"){
+    trap="⚠️ Trap Under: Market ke Under, model bilang Over. Hindari Over.";
   }
 
-  let expHome = (gfHome+ (h2hHome||gfHome) + (formHome||gfHome))/3;
-  let expAway = (gfAway+ (h2hAway||gfAway) + (formAway||gfAway))/3;
+  // Monte Carlo
+  let sims=monteCarlo(expH,expA,5000);
+  let simTable="<table><tr><th>Skor</th><th>Prob</th></tr>";
+  sims.forEach(s=>{
+    simTable+=`<tr><td>${s.score}</td><td>${(s.prob*100).toFixed(1)}%</td></tr>`;
+  });
+  simTable+="</table>";
 
-  let adj = applyInjuryV4(expHome, expAway);
-  expHome = adj.expHome; expAway = adj.expAway;
-
-  let total = expHome+expAway;
-  let pOver = total / (lineOU+0.5);
-  pOver = Math.max(0, Math.min(1, pOver));
-  let pUnder = 1 - pOver;
-  let pBTTS = Math.min(1, (expHome/2 + expAway/2)/1.5);
-
-  let hdpLine = (expHome - expAway).toFixed(2);
-  let fav = expHome>expAway ? teamHome : teamAway;
-
-  let impliedOver = oddsOver>0 ? 1/oddsOver : 0;
-  let impliedUnder = oddsUnder>0 ? 1/oddsUnder : 0;
-  let sumImp = impliedOver+impliedUnder;
-  if(sumImp>0){ impliedOver/=sumImp; impliedUnder/=sumImp; }
-
-  function confidence(prob, implied){
-    return Math.abs(prob - implied) * 100;
-  }
-
-  let rekOU = "❌ No Bet";
-  let confOU = 0;
-  if(pOver - impliedOver > 0.08){ rekOU = "🔥 Over "+lineOU; confOU = confidence(pOver, impliedOver); }
-  else if(pUnder - impliedUnder > 0.08){ rekOU = "🔥 Under "+lineOU; confOU = confidence(pUnder, impliedUnder); }
-
-  let rekBTTS = "❌ No Bet", confBTTS=0;
-  if(pBTTS>0.55){ rekBTTS = "🔥 BTTS: YES"; confBTTS = (pBTTS-0.5)*200; }
-  else if(pBTTS<0.45){ rekBTTS = "🔥 BTTS: NO"; confBTTS = (0.5-pBTTS)*200; }
-
-  let rekHDP = "❌ Hindari HDP (imbang)", confHDP=0;
-  if(Math.abs(expHome-expAway)>=0.25){
-    rekHDP = `🔥 HDP: ${fav} -${Math.abs(hdpLine)}`;
-    confHDP = Math.abs(expHome-expAway)*50;
-  }
-
-  let trapMsg = "";
-  if (pOver > impliedOver && rekOU.includes("Under")) {
-    trapMsg = "<div class='trap'>⚠️🔒 Potensi Trap: Market condong ke Over, model rekomendasi Under → Hindari bet besar!</div>";
-  }
-  if (pUnder > impliedUnder && rekOU.includes("Over")) {
-    trapMsg = "<div class='trap'>⚠️🔒 Potensi Trap: Market condong ke Under, model rekomendasi Over → Hindari bet besar!</div>";
-  }
-
-  let warningMsg = "";
-  if(confOU<25 && confBTTS<25 && confHDP<25){
-    warningMsg = '<div class="warning">⚠️ Semua rekomendasi confidence rendah → Hindari pertandingan ini!</div>';
-  }
-
-  let sims = simulateScores(expHome, expAway, 5000);
-  let simTable = '<table class="sim-table"><tr><th>Skor</th><th>Probabilitas</th></tr>' +
-    sims.map(s=>`<tr><td>${s.score}</td><td>${(s.prob*100).toFixed(1)}%</td></tr>`).join('') + '</table>';
-
-  document.getElementById('output').innerHTML = `
-    <h3>${teamHome} vs ${teamAway}</h3>
-    <p>⚽ ExpGoals → Home: ${expHome.toFixed(2)} | Away: ${expAway.toFixed(2)}</p>
-    <p>📊 Rekomendasi O/U: ${rekOU} (<span class='${getConfidenceClass(confOU)}'>Conf: ${confOU.toFixed(1)}%</span>)</p>
-    <p>🤝 Rekomendasi BTTS: ${rekBTTS} (<span class='${getConfidenceClass(confBTTS)}'>Conf: ${confBTTS.toFixed(1)}%</span>)</p>
-    <p>🎯 Rekomendasi HDP: ${rekHDP} (<span class='${getConfidenceClass(confHDP)}'>Conf: ${confHDP.toFixed(1)}%</span>)</p>
-    ${trapMsg}
-    ${warningMsg}
-    <h4>🔮 Simulasi Skor (Top 6)</h4>
+  // output
+  document.getElementById("output").innerHTML=`
+    <p>⚽ ExpGoals: ${teamH} ${expH.toFixed(2)} | ${teamA} ${expA.toFixed(2)} (Total ${total.toFixed(2)})</p>
+    <p>O/U: ${recOU} <span class="${confClass(confOU)}">${confOU.toFixed(1)}%</span></p>
+    <p>BTTS: ${recBTTS} <span class="${confClass(confBTTS)}">${confBTTS.toFixed(1)}%</span></p>
+    <p>HDP: ${recHDP} <span class="${confClass(confHDP)}">${confHDP.toFixed(1)}%</span></p>
+    ${trap?`<div class="trap">${trap}</div>`:""}
+    <h4>Simulasi Skor</h4>
     ${simTable}
   `;
 }
 </script>
 </body>
-</html>
+      </html>
