@@ -3,107 +3,78 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Analisis Parlay Ultra</title>
+<title>Analisis Parlay Ultra++</title>
 <style>
-  body{font-family:Inter,system-ui,Arial,sans-serif;padding:18px;background:#f6f7fb;color:#111}
-  h1{margin:0 0 12px;font-size:20px}
+  body{font-family:Arial,sans-serif;padding:18px;background:#f6f7fb;color:#111}
+  h1{margin-bottom:10px;font-size:20px}
   .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
   .card{background:white;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(20,20,50,0.06)}
   label{font-weight:600;font-size:13px;display:block;margin-top:8px}
-  input[type=number], input[type=text], select{width:100%;padding:8px;border:1px solid #d6d8e0;border-radius:6px}
-  button{background:#2563eb;color:white;border:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:10px}
-  .muted{color:#666;font-size:13px}
-  .small{font-size:13px}
-  #output{margin-top:12px}
-  .conf-high{color:green;font-weight:800}
-  .conf-med{color:orange;font-weight:800}
-  .conf-low{color:red;font-weight:800}
-  .trap{background:#fff0f0;border:1px solid #ffc9c9;padding:8px;border-radius:6px;color:#8b0000;font-weight:700;margin-top:8px}
+  input,select{width:100%;padding:6px;border:1px solid #ccc;border-radius:6px}
+  button{background:#2563eb;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700;margin-top:10px}
+  .conf-high{color:green;font-weight:700}
+  .conf-med{color:orange;font-weight:700}
+  .conf-low{color:red;font-weight:700}
+  .trap{background:#ffeaea;border:1px solid #ffbdbd;padding:6px;margin-top:8px;border-radius:6px;color:#8b0000;font-weight:700}
   table{width:100%;border-collapse:collapse;margin-top:8px}
-  th,td{padding:6px;border:1px solid #eee;text-align:left;font-size:13px}
-  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#303f9f;font-weight:700;font-size:12px}
-  .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  .footer{margin-top:14px;font-size:13px;color:#444}
-  .col{margin-bottom:6px}
+  th,td{padding:4px;border:1px solid #eee;text-align:left;font-size:13px}
+  .advice-strong{background:#e0ffe0;padding:6px;border-radius:6px;color:#006400;font-weight:700;margin-top:8px}
+  .advice-small{background:#fffbe0;padding:6px;border-radius:6px;color:#8b8000;font-weight:700;margin-top:8px}
+  .advice-nobet{background:#ffeaea;padding:6px;border-radius:6px;color:#8b0000;font-weight:700;margin-top:8px}
 </style>
 </head>
 <body>
-<h1>Analisis Parlay — Ultra (ExpG • ADI • HDP • Trap • MC)</h1>
+<h1>Analisis Parlay Ultra++</h1>
 <div class="grid">
   <div class="card">
-    <label>Tim Home</label>
-    <input id="team_home" type="text" placeholder="Contoh: Lille" value="Lille">
-    <label>Tim Away</label>
-    <input id="team_away" type="text" placeholder="Contoh: Lyon" value="Lyon">
+    <label>Tim Home</label><input id="team_home" type="text" value="Lille">
+    <label>Tim Away</label><input id="team_away" type="text" value="Lyon">
 
-    <h3 class="small">Statistik (Home / Away split)</h3>
-    <label>GF Home (avg kandang)</label>
-    <input id="gf_home" type="number" step="0.01" value="1.6">
-    <label>GA Home (avg kandang)</label>
-    <input id="ga_home" type="number" step="0.01" value="0.9">
-    <label>GF Away (avg tandang)</label>
-    <input id="gf_away" type="number" step="0.01" value="1.2">
-    <label>GA Away (avg tandang)</label>
-    <input id="ga_away" type="number" step="0.01" value="1.5">
+    <h3>Statistik (Home/Away split)</h3>
+    <label>GF Home</label><input id="gf_home" type="number" step="0.01" value="1.6">
+    <label>GA Home</label><input id="ga_home" type="number" step="0.01" value="0.9">
+    <label>GF Away</label><input id="gf_away" type="number" step="0.01" value="1.2">
+    <label>GA Away</label><input id="ga_away" type="number" step="0.01" value="1.5">
 
-    <h3 class="small">Form & H2H (opsional)</h3>
-    <label>Form Home GF (5 laga)</label>
-    <input id="form_home" type="number" step="0.01">
-    <label>Form Away GF (5 laga)</label>
-    <input id="form_away" type="number" step="0.01">
-    <label>H2H GF Home</label>
-    <input id="h2h_home" type="number" step="0.01">
-    <label>H2H GF Away</label>
-    <input id="h2h_away" type="number" step="0.01">
+    <h3>Form & H2H (opsional)</h3>
+    <label>Form Home GF (5 laga)</label><input id="form_home" type="number" step="0.01">
+    <label>Form Away GF (5 laga)</label><input id="form_away" type="number" step="0.01">
+    <label>H2H GF Home</label><input id="h2h_home" type="number" step="0.01">
+    <label>H2H GF Away</label><input id="h2h_away" type="number" step="0.01">
 
-    <h3 class="small">Odds Over/Under</h3>
-    <label>Line O/U</label>
-    <input id="line_ou" type="number" step="0.25" value="2.5">
-    <label>Odds Over</label>
-    <input id="odds_over" type="number" step="0.01" value="1.90">
-    <label>Odds Under</label>
-    <input id="odds_under" type="number" step="0.01" value="1.95">
+    <h3>Odds Over/Under</h3>
+    <label>Line O/U</label><input id="line_ou" type="number" step="0.25" value="2.5">
+    <label>Odds Over</label><input id="odds_over" type="number" step="0.01" value="1.90">
+    <label>Odds Under</label><input id="odds_under" type="number" step="0.01" value="1.95">
 
-    <h3 class="small">Handicap (HDP)</h3>
-    <label>Line HDP</label>
-    <input id="line_hdp" type="number" step="0.25" value="-0.25">
-    <label>Odds HDP Home</label>
-    <input id="odds_hdp_home" type="number" step="0.01" value="1.92">
-    <label>Odds HDP Away</label>
-    <input id="odds_hdp_away" type="number" step="0.01" value="1.98">
+    <h3>Handicap (HDP)</h3>
+    <label>Line HDP</label><input id="line_hdp" type="number" step="0.25" value="-0.25">
+    <label>Odds HDP Home</label><input id="odds_hdp_home" type="number" step="0.01" value="1.92">
+    <label>Odds HDP Away</label><input id="odds_hdp_away" type="number" step="0.01" value="1.98">
 
-    <h3 class="small">Competition</h3>
-    <input id="competition" type="text" placeholder="league / cup / ucl / uefa" value="league">
+    <h3>Competition</h3>
+    <input id="competition" type="text" value="league">
 
-    <h3 class="small">Squad Depth</h3>
-    <select id="squad_mode">
-      <option value="auto">Auto</option>
-      <option value="manual">Manual</option>
-    </select>
+    <h3>Squad Depth</h3>
+    <select id="squad_mode"><option value="auto">Auto</option><option value="manual">Manual</option></select>
     <input id="squad_home" type="number" step="0.1" placeholder="Home Depth (0.6–1.8)">
     <input id="squad_away" type="number" step="0.1" placeholder="Away Depth (0.6–1.8)">
 
-    <h3 class="small">Injury Manager Home</h3>
+    <h3>Injury Manager Home</h3>
     <select id="role_home">
-      <option value="rotation">Rotation</option>
-      <option value="starter">Starter</option>
-      <option value="key">Key Player</option>
-      <option value="goalkeeper">Goalkeeper</option>
-      <option value="def_core">Def Core</option>
-      <option value="mid_core">Mid Core</option>
+      <option value="rotation">Rotation</option><option value="starter">Starter</option>
+      <option value="key">Key</option><option value="goalkeeper">Goalkeeper</option>
+      <option value="def_core">Def Core</option><option value="mid_core">Mid Core</option>
       <option value="striker_core">Striker Core</option>
     </select>
     <button onclick="addInjury('home')">Add Injury Home</button>
     <div id="injuries_home"></div>
 
-    <h3 class="small">Injury Manager Away</h3>
+    <h3>Injury Manager Away</h3>
     <select id="role_away">
-      <option value="rotation">Rotation</option>
-      <option value="starter">Starter</option>
-      <option value="key">Key Player</option>
-      <option value="goalkeeper">Goalkeeper</option>
-      <option value="def_core">Def Core</option>
-      <option value="mid_core">Mid Core</option>
+      <option value="rotation">Rotation</option><option value="starter">Starter</option>
+      <option value="key">Key</option><option value="goalkeeper">Goalkeeper</option>
+      <option value="def_core">Def Core</option><option value="mid_core">Mid Core</option>
       <option value="striker_core">Striker Core</option>
     </select>
     <button onclick="addInjury('away')">Add Injury Away</button>
@@ -115,149 +86,106 @@
     <h3>Hasil Analisis</h3>
     <div id="output"></div>
   </div>
-</div>
-
-<script>
-// Global injuries
-let injuryHome=[], injuryAway=[];
+                                  </div>
+                                  <script>
+let injuryHome=[],injuryAway=[];
 function addInjury(side){
   let role=document.getElementById("role_"+side).value;
   if(side==="home"){injuryHome.push(role);}else{injuryAway.push(role);}
   renderInjuries();
 }
 function renderInjuries(){
-  document.getElementById("injuries_home").innerHTML=injuryHome.join(", ");
-  document.getElementById("injuries_away").innerHTML=injuryAway.join(", ");
+  document.getElementById("injuries_home").innerText="Home: "+injuryHome.join(", ");
+  document.getElementById("injuries_away").innerText="Away: "+injuryAway.join(", ");
+}
+function confClass(v){if(v>=65)return"conf-high";if(v>=45)return"conf-med";return"conf-low";}
+
+// Poisson & Monte Carlo
+function poissonSample(lambda){let L=Math.exp(-lambda),k=0,p=1;do{k++;p*=Math.random();}while(p>L);return k-1;}
+function monteCarlo(lH,lA,n=5000){
+  let d={};for(let i=0;i<n;i++){let gH=poissonSample(lH),gA=poissonSample(lA);let key=gH+"-"+gA;d[key]=(d[key]||0)+1;}
+  return Object.entries(d).map(([k,v])=>({score:k,prob:v/n})).sort((a,b)=>b.prob-a.prob).slice(0,6);
 }
 
-// Confidence helper
-function confClass(v){
-  if(v>=65)return "conf-high";
-  if(v>=45)return "conf-med";
-  return "conf-low";
-}
-
-// Monte Carlo Poisson
-function poisson(lam,k){
-  return Math.pow(lam,k)*Math.exp(-lam)/factorial(k);
-}
-function factorial(n){return n? n*factorial(n-1):1;}
-function monteCarlo(lambdaH,lambdaA,n=5000){
-  let dist={};
-  for(let i=0;i<n;i++){
-    let gH=poissonSample(lambdaH);
-    let gA=poissonSample(lambdaA);
-    let key=gH+"-"+gA;
-    dist[key]=(dist[key]||0)+1;
-  }
-  let arr=Object.entries(dist).map(([k,v])=>({score:k,prob:v/n}));
-  arr.sort((a,b)=>b.prob-a.prob);
-  return arr.slice(0,6);
-}
-function poissonSample(lambda){
-  let L=Math.exp(-lambda),k=0,p=1;
-  do{k++;p*=Math.random();}while(p>L);
-  return k-1;
-}
-
-// Injury impact
-function injuryImpact(arr){
+// Injury Impact Ultra++
+function injuryImpact(arr, squadDepth){
   let mult=1.0;
-  arr.forEach(r=>{
-    if(r==="rotation")mult*=0.98;
-    if(r==="starter")mult*=0.95;
-    if(r==="key")mult*=0.9;
-    if(r==="goalkeeper")mult*=0.88;
-    if(r==="def_core")mult*=0.9;
-    if(r==="mid_core")mult*=0.92;
-    if(r==="striker_core")mult*=0.85;
-  });
+  let counts={};arr.forEach(r=>counts[r]=(counts[r]||0)+1);
+  for(let role in counts){
+    let c=counts[role],impact=1.0;
+    if(role==="rotation")impact=0.98;
+    if(role==="starter")impact=0.93;
+    if(role==="key")impact=0.85;
+    if(role==="goalkeeper")impact=0.82;
+    if(role==="def_core")impact=0.88;
+    if(role==="mid_core")impact=0.90;
+    if(role==="striker_core")impact=0.85;
+    mult*=Math.pow(impact,c);
+  }
+  // squad depth mitigasi
+  if(squadDepth && squadDepth>1){
+    mult=1-(1-mult)/(squadDepth*0.8);
+  }
   return mult;
 }
-
-// Analysis
-function analisis(){
-  let teamH=document.getElementById("team_home").value;
-  let teamA=document.getElementById("team_away").value;
-  let gfH=parseFloat(document.getElementById("gf_home").value||0);
-  let gaH=parseFloat(document.getElementById("ga_home").value||0);
-  let gfA=parseFloat(document.getElementById("gf_away").value||0);
-  let gaA=parseFloat(document.getElementById("ga_away").value||0);
-
-  let formH=parseFloat(document.getElementById("form_home").value||gfH);
-  let formA=parseFloat(document.getElementById("form_away").value||gfA);
-  let h2hH=parseFloat(document.getElementById("h2h_home").value||gfH);
-  let h2hA=parseFloat(document.getElementById("h2h_away").value||gfA);
-
-  let lineOU=parseFloat(document.getElementById("line_ou").value||2.5);
-  let oddsOver=parseFloat(document.getElementById("odds_over").value||2.0);
-  let oddsUnder=parseFloat(document.getElementById("odds_under").value||2.0);
-
-  let lineHDP=parseFloat(document.getElementById("line_hdp").value||0);
-  let oddsHDPH=parseFloat(document.getElementById("odds_hdp_home").value||2.0);
-  let oddsHDPA=parseFloat(document.getElementById("odds_hdp_away").value||2.0);
-
+    function analisis(){
+  let tH=document.getElementById("team_home").value,tA=document.getElementById("team_away").value;
+  let gfH=parseFloat(document.getElementById("gf_home").value||0),gaH=parseFloat(document.getElementById("ga_home").value||0);
+  let gfA=parseFloat(document.getElementById("gf_away").value||0),gaA=parseFloat(document.getElementById("ga_away").value||0);
+  let formH=parseFloat(document.getElementById("form_home").value||gfH),formA=parseFloat(document.getElementById("form_away").value||gfA);
+  let h2hH=parseFloat(document.getElementById("h2h_home").value||gfH),h2hA=parseFloat(document.getElementById("h2h_away").value||gfA);
+  let lineOU=parseFloat(document.getElementById("line_ou").value||2.5),oddsOver=parseFloat(document.getElementById("odds_over").value||2.0),oddsUnder=parseFloat(document.getElementById("odds_under").value||2.0);
+  let lineHDP=parseFloat(document.getElementById("line_hdp").value||0),oddsHDPH=parseFloat(document.getElementById("odds_hdp_home").value||2.0),oddsHDPA=parseFloat(document.getElementById("odds_hdp_away").value||2.0);
   let comp=document.getElementById("competition").value.toLowerCase();
+  let squadMode=document.getElementById("squad_mode").value;
+  let squadH=parseFloat(document.getElementById("squad_home").value||1.0);
+  let squadA=parseFloat(document.getElementById("squad_away").value||1.0);
 
-  let expH=(gfH+formH+h2hH)/3;
-  let expA=(gfA+formA+h2hA)/3;
+  let expH=(gfH+formH+h2hH)/3,expA=(gfA+formA+h2hA)/3;
+  if(["cup","ucl","uefa","knockout"].includes(comp)){expH*=0.85;expA*=0.85;}
 
-  // competition correction
-  if(["cup","ucl","uefa","knockout"].includes(comp)){
-    expH*=0.85;expA*=0.85;
-  }
-  // injury impact
-  expH*=injuryImpact(injuryHome);
-  expA*=injuryImpact(injuryAway);
-
+  expH*=injuryImpact(injuryHome,squadH);
+  expA*=injuryImpact(injuryAway,squadA);
   let total=expH+expA;
 
-  // O/U rec
-  let impliedOver=1/oddsOver, impliedUnder=1/oddsUnder;
-  let pOver=(total/lineOU); if(pOver>1)pOver=1;
-  let pUnder=1-pOver;
-  let recOU=pOver>pUnder?"Over":"Under";
-  let confOU=Math.abs(pOver-pUnder)*100;
+  // O/U
+  let impliedOver=1/oddsOver,impliedUnder=1/oddsUnder;
+  let pOver=(total/lineOU);if(pOver>1)pOver=1;let pUnder=1-pOver;
+  let recOU=pOver>pUnder?"Over":"Under",confOU=Math.abs(pOver-pUnder)*100;
 
   // BTTS
-  let recBTTS=(expH>0.9&&expA>0.9)?"YES":"NO";
-  let confBTTS=(Math.min(expH,expA)/Math.max(expH,expA))*100;
+  let recBTTS=(expH>0.9&&expA>0.9)?"YES":"NO",confBTTS=(Math.min(expH,expA)/Math.max(expH,expA))*100;
 
-  // HDP rec (simple: compare expG diff to line)
-  let diff=expH-expA;
-  let recHDP="No Bet";
-  if(diff>0.3)recHDP=teamH+" "+lineHDP;
-  else if(diff<-0.3)recHDP=teamA+" "+(-lineHDP);
+  // HDP
+  let diff=expH-expA;let recHDP="No Bet";if(diff>0.3)recHDP=tH+" "+lineHDP;else if(diff<-0.3)recHDP=tA+" "+(-lineHDP);
   let confHDP=Math.min(70,Math.abs(diff)*50);
 
   // Trap Detector
-  let trap="";
-  if(pOver>impliedOver && recOU==="Under"){
-    trap="⚠️ Trap Over: Market ke Over, model bilang Under. Hindari Over.";
-  }
-  if(pUnder>impliedUnder && recOU==="Over"){
-    trap="⚠️ Trap Under: Market ke Under, model bilang Over. Hindari Over.";
-  }
+  let trap="";if(pOver>impliedOver && recOU==="Under"){trap="⚠️ Trap Over: Market ke Over, model bilang Under.";}
+  if(pUnder>impliedUnder && recOU==="Over"){trap="⚠️ Trap Under: Market ke Under, model bilang Over.";}
 
   // Monte Carlo
   let sims=monteCarlo(expH,expA,5000);
   let simTable="<table><tr><th>Skor</th><th>Prob</th></tr>";
-  sims.forEach(s=>{
-    simTable+=`<tr><td>${s.score}</td><td>${(s.prob*100).toFixed(1)}%</td></tr>`;
-  });
-  simTable+="</table>";
+  sims.forEach(s=>{simTable+=`<tr><td>${s.score}</td><td>${(s.prob*100).toFixed(1)}%</td></tr>`;});simTable+="</table>";
 
-  // output
+  // Action Advice
+  let advice="";
+  let maxConf=Math.max(confOU,confBTTS,confHDP);
+  if(maxConf>=65)advice="<div class='advice-strong'>✅ Strong Bet</div>";
+  else if(maxConf>=45)advice="<div class='advice-small'>⚠️ Small Stake</div>";
+  else advice="<div class='advice-nobet'>❌ No Bet / Hindari</div>";
+
   document.getElementById("output").innerHTML=`
-    <p>⚽ ExpGoals: ${teamH} ${expH.toFixed(2)} | ${teamA} ${expA.toFixed(2)} (Total ${total.toFixed(2)})</p>
+    <p>ExpGoals: ${tH} ${expH.toFixed(2)} | ${tA} ${expA.toFixed(2)} (Total ${total.toFixed(2)})</p>
     <p>O/U: ${recOU} <span class="${confClass(confOU)}">${confOU.toFixed(1)}%</span></p>
     <p>BTTS: ${recBTTS} <span class="${confClass(confBTTS)}">${confBTTS.toFixed(1)}%</span></p>
     <p>HDP: ${recHDP} <span class="${confClass(confHDP)}">${confHDP.toFixed(1)}%</span></p>
     ${trap?`<div class="trap">${trap}</div>`:""}
-    <h4>Simulasi Skor</h4>
-    ${simTable}
+    ${advice}
+    <h4>Simulasi Skor</h4>${simTable}
   `;
 }
 </script>
 </body>
-      </html>
+</html>                                
