@@ -90,77 +90,7 @@
   <div id="result"></div>
 
 <script>
-  // ================== DATA LIGA LENGKAP ==================
-const leagueMeta = {
-  // 🇬🇧 Inggris
-  "Premier League": {avg:2.65, baseK:1.8, homeBias:0.12, reliability:0.70},
-  "Championship": {avg:2.45, baseK:1.6, homeBias:0.10, reliability:0.65},
-  "FA Cup": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.60},
-  "EFL Cup (Carabao Cup)": {avg:3.10, baseK:1.7, homeBias:0.05, reliability:0.60},
-
-  // 🇪🇸 Spanyol
-  "La Liga": {avg:2.62, baseK:1.6, homeBias:0.10, reliability:0.70},
-  "Segunda División": {avg:2.55, baseK:1.5, homeBias:0.08, reliability:0.65},
-  "Copa del Rey": {avg:2.95, baseK:1.7, homeBias:0.05, reliability:0.60},
-
-  // 🇮🇹 Italia
-  "Serie A": {avg:2.56, baseK:1.6, homeBias:0.08, reliability:0.65},
-  "Serie B": {avg:2.47, baseK:1.5, homeBias:0.08, reliability:0.60},
-  "Coppa Italia": {avg:3.00, baseK:1.8, homeBias:0.05, reliability:0.60},
-
-  // 🇩🇪 Jerman
-  "Bundesliga": {avg:3.14, baseK:2.0, homeBias:0.12, reliability:0.75},
-  "2. Bundesliga": {avg:3.02, baseK:1.9, homeBias:0.10, reliability:0.70},
-  "DFB-Pokal": {avg:4.19, baseK:2.2, homeBias:0.05, reliability:0.55},
-
-  // 🇫🇷 Prancis
-  "Ligue 1": {avg:2.96, baseK:1.7, homeBias:0.10, reliability:0.65},
-  "Ligue 2": {avg:2.41, baseK:1.5, homeBias:0.08, reliability:0.60},
-  "Coupe de France": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.55},
-
-  // 🇳🇱 Belanda
-  "Eredivisie": {avg:2.98, baseK:1.8, homeBias:0.10, reliability:0.65},
-  "Eerste Divisie": {avg:3.10, baseK:1.9, homeBias:0.08, reliability:0.60},
-  "KNVB Cup": {avg:3.80, baseK:2.0, homeBias:0.05, reliability:0.55},
-
-  // 🇵🇹 Portugal
-  "Primeira Liga": {avg:2.87, baseK:1.7, homeBias:0.08, reliability:0.65},
-  "Taça de Portugal": {avg:2.90, baseK:1.8, homeBias:0.05, reliability:0.60},
-
-  // 🇨🇭 Swiss
-  "Swiss Super League": {avg:3.33, baseK:2.0, homeBias:0.10, reliability:0.65},
-  "Swiss Cup": {avg:3.50, baseK:2.0, homeBias:0.05, reliability:0.55},
-
-  // 🇹🇷 Turki
-  "Süper Lig": {avg:2.94, baseK:1.7, homeBias:0.10, reliability:0.65},
-  "Turkish Cup": {avg:2.90, baseK:1.8, homeBias:0.05, reliability:0.55},
-
-  // 🇬🇷 Yunani
-  "Super League Greece": {avg:2.97, baseK:1.6, homeBias:0.10, reliability:0.65},
-  "Greek Cup": {avg:2.30, baseK:1.5, homeBias:0.05, reliability:0.55},
-
-  // 🇷🇺 Rusia
-  "Russian Premier League": {avg:2.70, baseK:1.6, homeBias:0.08, reliability:0.65},
-  "Russian Cup": {avg:2.80, baseK:1.7, homeBias:0.05, reliability:0.55},
-
-  // 🇷🇴 Rumania
-  "Liga I": {avg:2.67, baseK:1.6, homeBias:0.08, reliability:0.65},
-  "Cupa României": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.55},
-
-  // 🇵🇱 Polandia
-  "Ekstraklasa": {avg:2.85, baseK:1.6, homeBias:0.08, reliability:0.65},
-  "Polish Cup": {avg:2.90, baseK:1.7, homeBias:0.05, reliability:0.55},
-
-  // 🇭🇷 Kroasia
-  "HNL": {avg:2.36, baseK:1.5, homeBias:0.08, reliability:0.60},
-  "Croatian Cup": {avg:3.10, baseK:1.7, homeBias:0.05, reliability:0.55},
-
-  // 🇱🇻 Latvia
-  "Latvia Higher League": {avg:2.89, baseK:1.6, homeBias:0.08, reliability:0.60},
-  "Latvian Cup": {avg:4.90, baseK:2.2, homeBias:0.05, reliability:0.50},
-
-  // 🇪🇪 Estonia
-  "Meistriliiga": {avg:3.22, baseK:1.8, homeBias:0.08, reliability:0.60},
+  ,
   // ================== DATA LIGA LENGKAP ==================
 const leagueMeta = {
   // 🇬🇧 Inggris
