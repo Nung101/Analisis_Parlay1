@@ -2,9 +2,9 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator HDP, O/U & Value Bet</title>
+  <title>Kalkulator HDP, O/U, Value Bet & Odds Trap</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
     h2 { color: #222; }
     .form-group { margin-bottom: 12px; }
     label { display: block; font-weight: bold; margin-bottom: 5px; }
@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-  <h2>⚽ Kalkulator HDP, Over/Under & Value Bet</h2>
+  <h2>⚽ Kalkulator HDP, O/U, Value Bet & Odds Trap</h2>
 
   <!-- Pilih Liga -->
   <div class="form-group">
@@ -161,6 +161,77 @@ const leagueMeta = {
 
   // 🇪🇪 Estonia
   "Meistriliiga": {avg:3.22, baseK:1.8, homeBias:0.08, reliability:0.60},
+  // ================== DATA LIGA LENGKAP ==================
+const leagueMeta = {
+  // 🇬🇧 Inggris
+  "Premier League": {avg:2.65, baseK:1.8, homeBias:0.12, reliability:0.70},
+  "Championship": {avg:2.45, baseK:1.6, homeBias:0.10, reliability:0.65},
+  "FA Cup": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.60},
+  "EFL Cup (Carabao Cup)": {avg:3.10, baseK:1.7, homeBias:0.05, reliability:0.60},
+
+  // 🇪🇸 Spanyol
+  "La Liga": {avg:2.62, baseK:1.6, homeBias:0.10, reliability:0.70},
+  "Segunda División": {avg:2.55, baseK:1.5, homeBias:0.08, reliability:0.65},
+  "Copa del Rey": {avg:2.95, baseK:1.7, homeBias:0.05, reliability:0.60},
+
+  // 🇮🇹 Italia
+  "Serie A": {avg:2.56, baseK:1.6, homeBias:0.08, reliability:0.65},
+  "Serie B": {avg:2.47, baseK:1.5, homeBias:0.08, reliability:0.60},
+  "Coppa Italia": {avg:3.00, baseK:1.8, homeBias:0.05, reliability:0.60},
+
+  // 🇩🇪 Jerman
+  "Bundesliga": {avg:3.14, baseK:2.0, homeBias:0.12, reliability:0.75},
+  "2. Bundesliga": {avg:3.02, baseK:1.9, homeBias:0.10, reliability:0.70},
+  "DFB-Pokal": {avg:4.19, baseK:2.2, homeBias:0.05, reliability:0.55},
+
+  // 🇫🇷 Prancis
+  "Ligue 1": {avg:2.96, baseK:1.7, homeBias:0.10, reliability:0.65},
+  "Ligue 2": {avg:2.41, baseK:1.5, homeBias:0.08, reliability:0.60},
+  "Coupe de France": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.55},
+
+  // 🇳🇱 Belanda
+  "Eredivisie": {avg:2.98, baseK:1.8, homeBias:0.10, reliability:0.65},
+  "Eerste Divisie": {avg:3.10, baseK:1.9, homeBias:0.08, reliability:0.60},
+  "KNVB Cup": {avg:3.80, baseK:2.0, homeBias:0.05, reliability:0.55},
+
+  // 🇵🇹 Portugal
+  "Primeira Liga": {avg:2.87, baseK:1.7, homeBias:0.08, reliability:0.65},
+  "Taça de Portugal": {avg:2.90, baseK:1.8, homeBias:0.05, reliability:0.60},
+
+  // 🇨🇭 Swiss
+  "Swiss Super League": {avg:3.33, baseK:2.0, homeBias:0.10, reliability:0.65},
+  "Swiss Cup": {avg:3.50, baseK:2.0, homeBias:0.05, reliability:0.55},
+
+  // 🇹🇷 Turki
+  "Süper Lig": {avg:2.94, baseK:1.7, homeBias:0.10, reliability:0.65},
+  "Turkish Cup": {avg:2.90, baseK:1.8, homeBias:0.05, reliability:0.55},
+
+  // 🇬🇷 Yunani
+  "Super League Greece": {avg:2.97, baseK:1.6, homeBias:0.10, reliability:0.65},
+  "Greek Cup": {avg:2.30, baseK:1.5, homeBias:0.05, reliability:0.55},
+
+  // 🇷🇺 Rusia
+  "Russian Premier League": {avg:2.70, baseK:1.6, homeBias:0.08, reliability:0.65},
+  "Russian Cup": {avg:2.80, baseK:1.7, homeBias:0.05, reliability:0.55},
+
+  // 🇷🇴 Rumania
+  "Liga I": {avg:2.67, baseK:1.6, homeBias:0.08, reliability:0.65},
+  "Cupa României": {avg:3.20, baseK:1.8, homeBias:0.05, reliability:0.55},
+
+  // 🇵🇱 Polandia
+  "Ekstraklasa": {avg:2.85, baseK:1.6, homeBias:0.08, reliability:0.65},
+  "Polish Cup": {avg:2.90, baseK:1.7, homeBias:0.05, reliability:0.55},
+
+  // 🇭🇷 Kroasia
+  "HNL": {avg:2.36, baseK:1.5, homeBias:0.08, reliability:0.60},
+  "Croatian Cup": {avg:3.10, baseK:1.7, homeBias:0.05, reliability:0.55},
+
+  // 🇱🇻 Latvia
+  "Latvia Higher League": {avg:2.89, baseK:1.6, homeBias:0.08, reliability:0.60},
+  "Latvian Cup": {avg:4.90, baseK:2.2, homeBias:0.05, reliability:0.50},
+
+  // 🇪🇪 Estonia
+  "Meistriliiga": {avg:3.22, baseK:1.8, homeBias:0.08, reliability:0.60},
   "Estonian Cup": {avg:4.50, baseK:2.2, homeBias:0.05, reliability:0.50},
 
   // 🇸🇪 Swedia
@@ -198,9 +269,23 @@ const leagueMeta = {
   // 🌍 Turnamen Dunia
   "World Cup": {avg:2.70, baseK:1.6, homeBias:0.00, reliability:0.80}
 };
-  // ================== PERHITUNGAN ==================
 
-// Hitung Lambda (tajam, pakai bobot & faktor liga)
+// ================== ISI DROPDOWN LIGA ==================
+window.onload = function() {
+  const sel = document.getElementById('leagueSelect');
+  for (let liga in leagueMeta) {
+    let opt = document.createElement("option");
+    opt.value = liga;
+    opt.text = liga;
+    sel.appendChild(opt);
+  }
+  sel.selectedIndex = 0;
+  document.getElementById('leagueAvg').value = leagueMeta[sel.value].avg;
+  sel.addEventListener("change", function() {
+    document.getElementById('leagueAvg').value = leagueMeta[this.value].avg;
+  });
+};
+// ================== PERHITUNGAN (Lambda, Distribusi, HDP) ==================
 function calculateLambda(homeGF, homeGA, awayGF, awayGA, meta, h2hAdj=0) {
   const leagueFactor = meta.avg / 2.5;
   const homeAdv = 1 + meta.homeBias;
@@ -209,33 +294,20 @@ function calculateLambda(homeGF, homeGA, awayGF, awayGA, meta, h2hAdj=0) {
   let lambdaHome = ((homeGF*0.6 + awayGA*0.4)) * leagueFactor * homeAdv * relAdj;
   let lambdaAway = ((awayGF*0.6 + homeGA*0.4)) * leagueFactor * relAdj;
 
-  // Adjustment H2H opsional
   if (h2hAdj !== 0) {
     lambdaHome += h2hAdj > 0 ? h2hAdj*0.1 : 0;
     lambdaAway += h2hAdj < 0 ? Math.abs(h2hAdj)*0.1 : 0;
   }
-
   return { lambdaHome, lambdaAway };
 }
 
-// Faktor matematika dasar
+// ================== Distribusi Dasar ==================
 function factorial(n){ return n? n*factorial(n-1):1; }
 function poissonPMF(k, lambda){ return Math.pow(lambda,k)*Math.exp(-lambda)/factorial(k); }
 
-// Approx distribusi margin Skellam pakai Bessel
-function skellamPMF(k, mu1, mu2){
-  return Math.exp(-(mu1+mu2)) * Math.pow(mu1/mu2, k/2) * besseli(Math.abs(k), 2*Math.sqrt(mu1*mu2));
-}
-function besseli(n, x){ 
-  let sum=0; for (let m=0;m<50;m++) sum += Math.pow((x/2), 2*m+n)/(factorial(m)*factorial(m+n));
-  return sum;
-}
-
-// Normal approx untuk HDP probability
+// ================== HDP Probabilitas ==================
 function hdpProbability(marginMean, sigma, line) {
-  function cdf(x) {
-    return 0.5 * (1 + erf(x / Math.sqrt(2)));
-  }
+  function cdf(x) { return 0.5 * (1 + erf(x / Math.sqrt(2))); }
   function erf(x) {
     let sign = (x>=0)?1:-1; x=Math.abs(x);
     let a1=0.254829592, a2=-0.284496736, a3=1.421413741,
@@ -249,14 +321,24 @@ function hdpProbability(marginMean, sigma, line) {
   return {home: pHome, away: 1 - pHome};
 }
 
-// Threshold value bet adaptif
+// ================== Value Bet Threshold ==================
 function getValueThresh(meta) {
-  if (meta.avg > 3.0) return 0.08;   // liga gol tinggi
-  if (meta.avg < 2.5) return 0.03;   // liga gol rendah
-  return 0.05;                       // default moderat
+  if (meta.avg > 3.0) return 0.08;  // Liga produktif → butuh selisih lebih besar
+  if (meta.avg < 2.5) return 0.03;  // Liga ketat → selisih kecil sudah cukup
+  return 0.05;                       // Moderat default
 }
 
-// Hitung probabilitas semua outcome (O/U, 1X2, margin)
+// ================== Deteksi Odds Trap ==================
+function detectOddsTrap(prob, odds) {
+  if (!odds || odds <= 1.01) return null;
+  const implied = 1 / odds;
+  const diff = prob - implied;
+  if (Math.abs(diff) > 0.15) { 
+    return diff > 0 ? "🔥 Potensi Value (Trap Risiko)" : "⚠️ Trap Market";
+  }
+  return null;
+  }
+  // ================== ANALISIS & OUTPUT ==================
 function computeProbabilities(lambdaHome, lambdaAway) {
   let maxGoals = 6;
   let over=0, under=0, totalProb=0;
@@ -269,7 +351,11 @@ function computeProbabilities(lambdaHome, lambdaAway) {
       totalProb+=p;
       expectedMargin+=(i-j)*p;
       variance+=Math.pow(i-j,2)*p;
-      if (i>j) homeWin+=p; else if (i===j) draw+=p; else awayWin+=p;
+
+      if (i>j) homeWin+=p; 
+      else if (i===j) draw+=p; 
+      else awayWin+=p;
+
       if (i+j>2.5) over+=p; else under+=p;
     }
   }
@@ -282,79 +368,81 @@ function computeProbabilities(lambdaHome, lambdaAway) {
     margin: expectedMargin/totalProb,
     sigma: Math.sqrt(variance/totalProb - Math.pow(expectedMargin/totalProb,2))
   };
-  }
-  // ================== ANALISIS & OUTPUT ==================
+}
+
 function analyze() {
   const league = document.getElementById('leagueSelect').value;
   const meta = leagueMeta[league];
 
+  // input statistik
   const homeGF = parseFloat(document.getElementById('homeGF').value);
   const homeGA = parseFloat(document.getElementById('homeGA').value);
   const awayGF = parseFloat(document.getElementById('awayGF').value);
   const awayGA = parseFloat(document.getElementById('awayGA').value);
 
-  const {lambdaHome, lambdaAway} = calculateLambda(homeGF, homeGA, awayGF, awayGA, meta);
-  const probs = computeProbabilities(lambdaHome, lambdaAway);
-  const valueThresh = getValueThresh(meta);
-
-  // Input odds
+  // input odds
   const oddsOver = parseFloat(document.getElementById('oddsOver').value);
   const oddsUnder = parseFloat(document.getElementById('oddsUnder').value);
   const oddsHome = parseFloat(document.getElementById('oddsHome').value);
   const oddsDraw = parseFloat(document.getElementById('oddsDraw').value);
   const oddsAway = parseFloat(document.getElementById('oddsAway').value);
-
   const hdpLine = parseFloat(document.getElementById('hdpLine').value);
   const oddsHdpHome = parseFloat(document.getElementById('oddsHdpHome').value);
   const oddsHdpAway = parseFloat(document.getElementById('oddsHdpAway').value);
 
-  // Fungsi helper Value Bet
-  function valueBet(prob, odds){ return prob - (1/odds); }
+  // hitung lambda
+  const {lambdaHome, lambdaAway} = calculateLambda(homeGF, homeGA, awayGF, awayGA, meta);
+  const probs = computeProbabilities(lambdaHome, lambdaAway);
 
-  // Cek Value Bet O/U & 1X2
-  let rekom = [];
-  if(valueBet(probs.over,oddsOver)>valueThresh) rekom.push("🔥 Value Bet: Over 2.5");
-  if(valueBet(probs.under,oddsUnder)>valueThresh) rekom.push("🔥 Value Bet: Under 2.5");
-  if(valueBet(probs.homeWin,oddsHome)>valueThresh) rekom.push("🏠 Value Bet: Home Win");
-  if(valueBet(probs.draw,oddsDraw)>valueThresh) rekom.push("➖ Value Bet: Draw");
-  if(valueBet(probs.awayWin,oddsAway)>valueThresh) rekom.push("🚩 Value Bet: Away Win");
+  // probabilitas HDP
+  const hdpProbs = hdpProbability(probs.margin, probs.sigma, hdpLine);
 
-  // Cek Value Bet HDP
-  let hdpProbs = hdpProbability(probs.margin, probs.sigma, hdpLine);
-  let valHdpHome = hdpProbs.home - (1/oddsHdpHome);
-  let valHdpAway = hdpProbs.away - (1/oddsHdpAway);
+  // threshold value bet
+  const valueThresh = getValueThresh(meta);
 
-  if (valHdpHome > valueThresh) rekom.push(`🏠 Value Bet: Home HDP ${hdpLine}`);
-  if (valHdpAway > valueThresh) rekom.push(`🚩 Value Bet: Away HDP ${hdpLine}`);
+  // odds trap check
+  let trapOver = detectOddsTrap(probs.over, oddsOver);
+  let trapUnder = detectOddsTrap(probs.under, oddsUnder);
+  let trapHome = detectOddsTrap(probs.homeWin, oddsHome);
+  let trapDraw = detectOddsTrap(probs.draw, oddsDraw);
+  let trapAway = detectOddsTrap(probs.awayWin, oddsAway);
+  let trapHdpHome = detectOddsTrap(hdpProbs.home, oddsHdpHome);
+  let trapHdpAway = detectOddsTrap(hdpProbs.away, oddsHdpAway);
 
-  // Rekomendasi HDP berbasis margin
-  let hdpReco="";
-  if(probs.margin>0.8) hdpReco="🏠 Rekomendasi HDP: Home -0.75 / -1.0";
-  else if(probs.margin>0.4) hdpReco="🏠 Rekomendasi HDP: Home -0.25 / -0.5";
-  else if(probs.margin<-0.8) hdpReco="🚩 Rekomendasi HDP: Away +0.75 / +1.0";
-  else if(probs.margin<-0.4) hdpReco="🚩 Rekomendasi HDP: Away +0.25 / +0.5";
-  else hdpReco="➖ Rekomendasi HDP: 0 (DNB)";
+  // hasil analisis
+  let html = `<h3>📈 Hasil Analisis (${league})</h3>`;
+  html += `<p>Lambda Home: ${lambdaHome.toFixed(2)} | Lambda Away: ${lambdaAway.toFixed(2)}</p>`;
+  html += `<p>Probabilitas Over 2.5: ${(probs.over*100).toFixed(1)}% | Under 2.5: ${(probs.under*100).toFixed(1)}%</p>`;
+  html += `<p>Probabilitas 1X2 → Home: ${(probs.homeWin*100).toFixed(1)}% | Draw: ${(probs.draw*100).toFixed(1)}% | Away: ${(probs.awayWin*100).toFixed(1)}%</p>`;
+  html += `<p>HDP (${hdpLine}) → Home: ${(hdpProbs.home*100).toFixed(1)}% | Away: ${(hdpProbs.away*100).toFixed(1)}%</p>`;
 
-  // Hasil Output
-  let output = `
-    <b>Liga:</b> ${league} <br>
-    <b>Lambda Home:</b> ${lambdaHome.toFixed(2)} |
-    <b>Lambda Away:</b> ${lambdaAway.toFixed(2)} <br>
-    <b>Over 2.5:</b> ${(probs.over*100).toFixed(1)}% (Odds ${oddsOver}) <br>
-    <b>Under 2.5:</b> ${(probs.under*100).toFixed(1)}% (Odds ${oddsUnder}) <br>
-    <b>Home Win:</b> ${(probs.homeWin*100).toFixed(1)}% (Odds ${oddsHome}) <br>
-    <b>Draw:</b> ${(probs.draw*100).toFixed(1)}% (Odds ${oddsDraw}) <br>
-    <b>Away Win:</b> ${(probs.awayWin*100).toFixed(1)}% (Odds ${oddsAway}) <br>
-    <b>HDP Home ${hdpLine}:</b> ${(hdpProbs.home*100).toFixed(1)}% (Odds ${oddsHdpHome}) <br>
-    <b>HDP Away ${hdpLine}:</b> ${(hdpProbs.away*100).toFixed(1)}% (Odds ${oddsHdpAway}) <br>
-    <hr>
-    <b>Rekomendasi:</b><br>
-    ${rekom.length ? rekom.join("<br>") : "⚠️ Tidak ada value bet signifikan"} <br>
-    <hr>
-    <b>${hdpReco}</b>
-  `;
+  // value bet cek
+  function checkValue(prob, odds, label) {
+    if (!odds || odds<=1.01) return "";
+    const implied = 1/odds;
+    if (prob - implied > valueThresh) {
+      return `<p>💰 Value Bet terdeteksi di ${label} (Prob: ${(prob*100).toFixed(1)}% | Odds: ${odds})</p>`;
+    }
+    return "";
+  }
+  html += checkValue(probs.over, oddsOver, "Over 2.5");
+  html += checkValue(probs.under, oddsUnder, "Under 2.5");
+  html += checkValue(probs.homeWin, oddsHome, "Home Win");
+  html += checkValue(probs.draw, oddsDraw, "Draw");
+  html += checkValue(probs.awayWin, oddsAway, "Away Win");
+  html += checkValue(hdpProbs.home, oddsHdpHome, "HDP Home");
+  html += checkValue(hdpProbs.away, oddsHdpAway, "HDP Away");
 
-  document.getElementById('result').innerHTML = output;
+  // odds trap warning
+  if (trapOver) html += `<p>🚨 Over Trap: ${trapOver}</p>`;
+  if (trapUnder) html += `<p>🚨 Under Trap: ${trapUnder}</p>`;
+  if (trapHome) html += `<p>🚨 Home Trap: ${trapHome}</p>`;
+  if (trapDraw) html += `<p>🚨 Draw Trap: ${trapDraw}</p>`;
+  if (trapAway) html += `<p>🚨 Away Trap: ${trapAway}</p>`;
+  if (trapHdpHome) html += `<p>🚨 HDP Home Trap: ${trapHdpHome}</p>`;
+  if (trapHdpAway) html += `<p>🚨 HDP Away Trap: ${trapHdpAway}</p>`;
+
+  document.getElementById("result").innerHTML = html;
   }
   </script>
 </body>
