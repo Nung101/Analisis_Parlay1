@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Prediksi Parlay Analyzer - Versi Ultimate</title>
+  <title>Prediksi Parlay Analyzer - Ultimate+++</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
     h1 { text-align: center; }
@@ -10,7 +10,7 @@
     label { display: block; margin-top: 10px; font-weight: bold; }
     input { padding: 5px; margin: 5px 0; width: 120px; }
     button { margin-top: 15px; padding: 10px 15px; cursor: pointer; }
-    pre { background: #222; color: #0f0; padding: 15px; border-radius: 8px; }
+    pre { background: #111; color: #0f0; padding: 15px; border-radius: 8px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -93,20 +93,23 @@ function analisis() {
   const odds_over = parseFloat(document.getElementById("odds_over").value);
   const odds_under = parseFloat(document.getElementById("odds_under").value);
 
-  // Attack & Defense (versi tajam)
+  // --- Attack & Defense ---
   const homeAttack = (home_gf * 0.5 + h2h_home_gf * 0.3) * (home_gf > home_ga ? 1.2 : 0.95);
   const homeDefense = (home_ga * 0.5 + h2h_home_ga * 0.3);
 
   const awayAttack = (away_gf * 0.5 + h2h_away_gf * 0.3) * (away_gf > away_ga ? 1.15 : 0.9);
   const awayDefense = (away_ga * 0.5 + h2h_away_ga * 0.3);
 
-  // Expected Goals (hybrid + baseline liga)
+  // --- Expected Goals Hybrid + Form ---
   const leagueAvg = 2.6;
-  const expHome = (homeAttack * (1/(awayDefense||1)) + homeAttack + (leagueAvg/2)) / 3;
-  const expAway = (awayAttack * (1/(homeDefense||1)) + awayAttack + (leagueAvg/2)) / 3;
+  const formAdjHome = home_gf > 2.5 ? 1.12 : (home_gf < 1.0 ? 0.88 : 1.0);
+  const formAdjAway = away_gf > 2.5 ? 1.12 : (away_gf < 1.0 ? 0.88 : 1.0);
+
+  const expHome = ((homeAttack * (1 / (awayDefense || 1))) + homeAttack + (leagueAvg/2)) / 3 * formAdjHome;
+  const expAway = ((awayAttack * (1 / (homeDefense || 1))) + awayAttack + (leagueAvg/2)) / 3 * formAdjAway;
   const totalGoals = expHome + expAway;
 
-  // Probabilitas menang
+  // --- Probabilitas ---
   const probHomeWin = expHome / (expHome + expAway);
   const probAwayWin = 1 - probHomeWin;
   const probDraw = 1 - (probHomeWin + probAwayWin);
@@ -114,16 +117,20 @@ function analisis() {
   // --- HDP ---
   let rekom_hdp = "No Bet", hdp_conf = 55;
   const oddsGapHDP = Math.abs(odds_hdp_home - odds_hdp_away);
-  let drawPenalty = probDraw > 0.25 ? 8 : 0;
+  let drawPenalty = probDraw > 0.30 ? 12 : (probDraw > 0.22 ? 6 : 0);
 
-  if (probHomeWin > 0.55 && odds_hdp_home < 2.10) {
+  if (probHomeWin > 0.55 && odds_hdp_home < 2.20) {
     rekom_hdp = `${home} ${hdp_line}`;
     let base = probHomeWin * 100;
-    hdp_conf = Math.min(96, Math.max(50, base + (SBI*10) - (odds_hdp_home*3) - (oddsGapHDP*3) - drawPenalty));
-  } else if (probAwayWin > 0.55 && odds_hdp_away < 2.10) {
+    hdp_conf = Math.min(98, Math.max(50,
+      base + (SBI*12) - (odds_hdp_home*3) - (oddsGapHDP*2.5) - drawPenalty
+    ));
+  } else if (probAwayWin > 0.55 && odds_hdp_away < 2.20) {
     rekom_hdp = `${away} +${Math.abs(hdp_line)}`;
     let base = probAwayWin * 100;
-    hdp_conf = Math.min(96, Math.max(50, base + (Math.abs(SBI)*10) - (odds_hdp_away*3) - (oddsGapHDP*3) - drawPenalty));
+    hdp_conf = Math.min(98, Math.max(50,
+      base + (Math.abs(SBI)*12) - (odds_hdp_away*3) - (oddsGapHDP*2.5) - drawPenalty
+    ));
   }
 
   // --- O/U ---
@@ -140,14 +147,21 @@ function analisis() {
   let h2hFactor = (avgH2HGoals > 2.6 && probOver > probUnder) ? 5 : 
                   (avgH2HGoals < 2.2 && probUnder > probOver) ? 5 : 0;
 
-  if (probOver > 0.55 && odds_over < 2.10) {
+  let volFactor = (expHome > 1.5 && expAway > 1.5) ? 6 : 0;
+  let riskPenalty = probExact > 0.20 ? 12 : (probExact > 0.15 ? 6 : 0);
+
+  if (probOver > 0.55 && odds_over < 2.20) {
     rekom_ou = `Over ${ou_line}`;
     let base = probOver*100;
-    ou_conf = Math.min(96, Math.max(50, base + h2hFactor - (odds_over*3) - (oddsGapOU*3)));
-  } else if (probUnder > 0.55 && odds_under < 2.10) {
+    ou_conf = Math.min(98, Math.max(50,
+      base + h2hFactor + volFactor - (odds_over*3) - (oddsGapOU*2.5) - riskPenalty
+    ));
+  } else if (probUnder > 0.55 && odds_under < 2.20) {
     rekom_ou = `Under ${ou_line}`;
     let base = probUnder*100;
-    ou_conf = Math.min(96, Math.max(50, base + h2hFactor - (odds_under*3) - (oddsGapOU*3)));
+    ou_conf = Math.min(98, Math.max(50,
+      base + h2hFactor + volFactor - (odds_under*3) - (oddsGapOU*2.5) - riskPenalty
+    ));
   }
 
   let riskNote = probExact > 0.15 
@@ -159,20 +173,21 @@ function analisis() {
   const probAwayScored = 1 - poisson(expAway, 0);
   const probBTTS = probHomeScored * probAwayScored;
 
-  let boostBTTS = (expHome > 1 && expAway > 1) ? 7 : 0;
+  let boostBTTS = (expHome > 1.2 && expAway > 1.2 && totalGoals > 2.8) ? 12 : 0;
   const rekom_btts = probBTTS > 0.55 ? "BTTS Yes" : "BTTS No";
-  const btts_conf = Math.min(96, Math.max(50, (probBTTS*100) + boostBTTS));
+  const btts_conf = Math.min(98, Math.max(50, (probBTTS*100) + boostBTTS));
 
   // --- Trap Detector ---
   let trapNote = "";
   const impliedOver = 1 / odds_over;
   const impliedUnder = 1 / odds_under;
+  const marketOverProb = impliedOver / (impliedOver + impliedUnder);
+  const marketUnderProb = impliedUnder / (impliedOver + impliedUnder);
 
-  if (Math.abs(odds_over - odds_under) < 0.1) {
+  if (Math.abs(probOver - marketOverProb) > 0.20) {
+    trapNote = "🚨 GAP BESAR: Model vs Odds pasar sangat berbeda → indikasi jebakan!";
+  } else if (Math.abs(odds_over - odds_under) < 0.1) {
     trapNote = "⚠️ Odds O/U terlalu rapat → indikasi pasar tidak seimbang.";
-  } else if ((probOver > 0.6 && impliedOver < impliedUnder) ||
-             (probUnder > 0.6 && impliedUnder < impliedOver)) {
-    trapNote = "⚠️ Prediksi model bertentangan dengan odds pasar → potensi jebakan!";
   }
 
   // --- Output ---
@@ -203,4 +218,4 @@ function analisis() {
 }
 </script>
 </body>
-</html>
+  </html>
