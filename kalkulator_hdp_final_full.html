@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator HDP & O/U</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9; }
+    h1 { text-align:center; }
+    label { display:block; margin-top:6px; }
+    input, select, button { padding:6px; margin-top:4px; width:100%; }
+    .container { max-width:1000px; margin:auto; background:white; padding:20px; border-radius:8px; box-shadow:0 0 8px rgba(0,0,0,0.1); }
+    .row { display:flex; flex-wrap:wrap; gap:20px; }
+    .col { flex:1; min-width:200px; }
+    #result { margin-top:20px; padding:10px; border:1px solid #ddd; background:#fafafa; }
+    button { cursor:pointer; }
+    button.secondary { background:#ddd; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚽ Kalkulator HDP & Over/Under</h1>
+    <div class="row">
+      <div class="col">
+        <label>Kompetisi / Liga</label>
+        <select id="leagueSelect">
+          <option value="">-- Pilih Liga --</option>
+          <option>Premier League</option>
+          <option>Championship</option>
+          <option>FA Cup</option>
+          <option>EFL Cup (Carabao Cup)</option>
+          <option>La Liga</option>
+          <option>Segunda División</option>
+          <option>Copa del Rey</option>
+          <option>Serie A</option>
+          <option>Serie B</option>
+          <option>Coppa Italia</option>
+          <option>Bundesliga</option>
+          <option>2. Bundesliga</option>
+          <option>DFB-Pokal</option>
+          <option>Ligue 1</option>
+          <option>Ligue 2</option>
+          <option>Coupe de France</option>
+          <option>Eredivisie</option>
+          <option>Eerste Divisie</option>
+          <option>KNVB Cup</option>
+          <option>Primeira Liga</option>
+          <option>Taça de Portugal</option>
+          <option>Swiss Super League</option>
+          <option>Swiss Cup</option>
+          <option>Süper Lig</option>
+          <option>Turkish Cup</option>
+          <option>Super League Greece</option>
+          <option>Greek Cup</option>
+          <option>Russian Premier League</option>
+          <option>Russian Cup</option>
+          <option>Liga I</option>
+          <option>Cupa României</option>
+          <option>Ekstraklasa</option>
+          <option>Polish Cup</option>
+          <option>HNL</option>
+          <option>Croatian Cup</option>
+          <option>Latvia Higher League</option>
+          <option>Latvian Cup</option>
+          <option>Meistriliiga</option>
+          <option>Estonian Cup</option>
+          <option>Allsvenskan</option>
+          <option>Svenska Cupen</option>
+          <option>Eliteserien</option>
+          <option>Norwegian Cup</option>
+          <option>Superliga</option>
+          <option>1st Division</option>
+          <option>Danish Cup</option>
+          <option>Veikkausliiga</option>
+          <option>Ykkösliiga</option>
+          <option>Ykkönen</option>
+          <option>Suomen Cup</option>
+          <option>Úrvalsdeild</option>
+          <option>Icelandic Cup</option>
+          <option>Premier Division</option>
+          <option>FAI Cup</option>
+          <option>UEFA Champions League</option>
+          <option>UEFA Europa League</option>
+          <option>UEFA Conference League</option>
+          <option>World Cup</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Rata-rata Gol Liga</label>
+        <input id="leagueAvg" type="number" step="0.01" readonly />
+      </div>
+      <div class="col">
+        <label>Home GF</label>
+        <input id="homeGF" type="number" step="0.01" value="1.5" />
+        <label>Home GA</label>
+        <input id="homeGA" type="number" step="0.01" value="1.2" />
+      </div>
+      <div class="col">
+        <label>Away GF</label>
+        <input id="awayGF" type="number" step="0.01" value="1.4" />
+        <label>Away GA</label>
+        <input id="awayGA" type="number" step="0.01" value="1.3" />
+      </div>
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col">
+        <label>Odds Over 2.5</label>
+        <input id="oddsOver" type="number" step="0.01" value="1.90" />
+        <label style="margin-top:8px">Odds Under 2.5</label>
+        <input id="oddsUnder" type="number" step="0.01" value="1.90" />
+      </div>
+      <div class="col">
+        <label>Odds Home Win</label>
+        <input id="oddsHome" type="number" step="0.01" value="2.20" />
+        <label style="margin-top:8px">Odds Draw</label>
+        <input id="oddsDraw" type="number" step="0.01" value="3.20" />
+      </div>
+      <div class="col">
+        <label>Odds Away Win</label>
+        <input id="oddsAway" type="number" step="0.01" value="3.10" />
+        <label style="margin-top:8px">Value Bet Threshold (%)</label>
+        <input id="valueThreshPercent" type="number" step="0.1" value="5" />
+      </div>
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col">
+        <label>Line HDP</label>
+        <input id="hdpLine" type="number" step="0.25" value="-0.5" />
+      </div>
+      <div class="col">
+        <label>Odds Home (HDP)</label>
+        <input id="oddsHdpHome" type="number" step="0.01" value="1.92" />
+      </div>
+      <div class="col">
+        <label>Odds Away (HDP)</label>
+        <input id="oddsHdpAway" type="number" step="0.01" value="1.98" />
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button id="btnAnalyze">🔎 Analisis Sekarang</button>
+      <button id="btnReset" class="secondary" style="margin-left:8px">Reset</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+<script>
+// --- League Meta Data (truncated for brevity, same as part 3) ---
+// (Insert full leagueMeta object here, as previously given)
+
+// --- Poisson and Analysis Functions ---
+// (Insert full analyze() function here, as previously given)
+</script>
+
+</body>
+</html>
