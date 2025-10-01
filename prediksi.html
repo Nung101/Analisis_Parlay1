@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Prediksi Parlay Analyzer - Ultimate+++</title>
+  <title>Prediksi Parlay Analyzer - Ultimate+++++</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
     h1 { text-align: center; }
-    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 900px; margin: auto; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 980px; margin: auto; }
     label { display: block; margin-top: 10px; font-weight: bold; }
     input { padding: 5px; margin: 5px 0; width: 120px; }
     button { margin-top: 15px; padding: 10px 15px; cursor: pointer; }
@@ -15,7 +15,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Prediksi Parlay Analyzer ⚽</h1>
+    <h1>Prediksi Parlay Analyzer ⚽ - Ultimate+++++</h1>
 
     <label>Home Team</label>
     <input id="home" placeholder="Home Team">
@@ -42,8 +42,19 @@
     <label>Rata-rata Goals H2H</label>
     <input id="avgH2HGoals" type="number" step="0.01">
 
-    <label>SBI (Strength Balance Index)</label>
-    <input id="SBI" type="number" step="0.01">
+    <!-- AUTO-SBI INPUT -->
+    <h3>Auto-SBI Input</h3>
+    <label>Peringkat Home | Peringkat Away</label>
+    <input id="rank_home" type="number">
+    <input id="rank_away" type="number">
+
+    <label>Form (Menang 5 laga terakhir) Home | Away</label>
+    <input id="form_home" type="number" min="0" max="5">
+    <input id="form_away" type="number" min="0" max="5">
+
+    <label>Goal Difference (GD) Home | Away</label>
+    <input id="gd_home" type="number">
+    <input id="gd_away" type="number">
 
     <label>Line HDP | Odds Home | Odds Away</label>
     <input id="hdp_line" type="number" step="0.25">
@@ -62,33 +73,58 @@
   </div>
 
 <script>
-// Fungsi Poisson
+// --- Fungsi dasar ---
 function poisson(lambda, k) {
   return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
 }
 function factorial(n) { return n ? n * factorial(n - 1) : 1; }
 
+// --- Hitung Auto-SBI ---
+function hitungSBI(rank_home, rank_away, form_home, form_away, gd_home, gd_away) {
+  let sbi_rank = 0, sbi_form = 0, sbi_gd = 0;
+  const diffRank = rank_away - rank_home; // positif kalau Home lebih baik
+  if (Math.abs(diffRank) <= 5) sbi_rank = 0.05;
+  else if (Math.abs(diffRank) <= 10) sbi_rank = 0.20;
+  else sbi_rank = 0.40;
+  if (diffRank < 0) sbi_rank *= 1; else sbi_rank *= -1;
+  const diffForm = form_home - form_away;
+  if (diffForm >= 3) sbi_form = 0.20;
+  else if (diffForm >= 1) sbi_form = 0.10;
+  else if (diffForm <= -3) sbi_form = -0.20;
+  else if (diffForm <= -1) sbi_form = -0.10;
+  const diffGD = gd_home - gd_away;
+  if (diffGD >= 20) sbi_gd = 0.20;
+  else if (diffGD >= 10) sbi_gd = 0.10;
+  else if (diffGD <= -20) sbi_gd = -0.20;
+  else if (diffGD <= -10) sbi_gd = -0.10;
+  return (sbi_rank + sbi_form + sbi_gd);
+}
+
 function analisis() {
   const home = document.getElementById("home").value;
   const away = document.getElementById("away").value;
-
   const home_gf = parseFloat(document.getElementById("home_gf").value);
   const home_ga = parseFloat(document.getElementById("home_ga").value);
   const away_gf = parseFloat(document.getElementById("away_gf").value);
   const away_ga = parseFloat(document.getElementById("away_ga").value);
-
   const h2h_home_gf = parseFloat(document.getElementById("h2h_home_gf").value);
   const h2h_home_ga = parseFloat(document.getElementById("h2h_home_ga").value);
   const h2h_away_gf = parseFloat(document.getElementById("h2h_away_gf").value);
   const h2h_away_ga = parseFloat(document.getElementById("h2h_away_ga").value);
-
   const avgH2HGoals = parseFloat(document.getElementById("avgH2HGoals").value);
-  const SBI = parseFloat(document.getElementById("SBI").value);
+
+  // Auto-SBI Input
+  const rank_home = parseInt(document.getElementById("rank_home").value);
+  const rank_away = parseInt(document.getElementById("rank_away").value);
+  const form_home = parseInt(document.getElementById("form_home").value);
+  const form_away = parseInt(document.getElementById("form_away").value);
+  const gd_home = parseInt(document.getElementById("gd_home").value);
+  const gd_away = parseInt(document.getElementById("gd_away").value);
+  const SBI = hitungSBI(rank_home, rank_away, form_home, form_away, gd_home, gd_away);
 
   const hdp_line = parseFloat(document.getElementById("hdp_line").value);
   const odds_hdp_home = parseFloat(document.getElementById("odds_hdp_home").value);
   const odds_hdp_away = parseFloat(document.getElementById("odds_hdp_away").value);
-
   const ou_line = parseFloat(document.getElementById("ou_line").value);
   const odds_over = parseFloat(document.getElementById("odds_over").value);
   const odds_under = parseFloat(document.getElementById("odds_under").value);
@@ -96,17 +132,13 @@ function analisis() {
   // --- Attack & Defense ---
   const homeAttack = (home_gf * 0.5 + h2h_home_gf * 0.3) * (home_gf > home_ga ? 1.2 : 0.95);
   const homeDefense = (home_ga * 0.5 + h2h_home_ga * 0.3);
-
   const awayAttack = (away_gf * 0.5 + h2h_away_gf * 0.3) * (away_gf > away_ga ? 1.15 : 0.9);
   const awayDefense = (away_ga * 0.5 + h2h_away_ga * 0.3);
 
-  // --- Expected Goals Hybrid + Form ---
+  // --- Expected Goals ---
   const leagueAvg = 2.6;
-  const formAdjHome = home_gf > 2.5 ? 1.12 : (home_gf < 1.0 ? 0.88 : 1.0);
-  const formAdjAway = away_gf > 2.5 ? 1.12 : (away_gf < 1.0 ? 0.88 : 1.0);
-
-  const expHome = ((homeAttack * (1 / (awayDefense || 1))) + homeAttack + (leagueAvg/2)) / 3 * formAdjHome;
-  const expAway = ((awayAttack * (1 / (homeDefense || 1))) + awayAttack + (leagueAvg/2)) / 3 * formAdjAway;
+  const expHome = ((homeAttack * (1 / (awayDefense || 1))) + homeAttack + (leagueAvg/2)) / 3;
+  const expAway = ((awayAttack * (1 / (homeDefense || 1))) + awayAttack + (leagueAvg/2)) / 3;
   const totalGoals = expHome + expAway;
 
   // --- Probabilitas ---
@@ -121,19 +153,17 @@ function analisis() {
 
   if (probHomeWin > 0.55 && odds_hdp_home < 2.20) {
     rekom_hdp = `${home} ${hdp_line}`;
-    let base = probHomeWin * 100;
     hdp_conf = Math.min(98, Math.max(50,
-      base + (SBI*12) - (odds_hdp_home*3) - (oddsGapHDP*2.5) - drawPenalty
+      (probHomeWin*100) + (SBI*12) - (odds_hdp_home*3) - (oddsGapHDP*2.5) - drawPenalty
     ));
   } else if (probAwayWin > 0.55 && odds_hdp_away < 2.20) {
     rekom_hdp = `${away} +${Math.abs(hdp_line)}`;
-    let base = probAwayWin * 100;
     hdp_conf = Math.min(98, Math.max(50,
-      base + (Math.abs(SBI)*12) - (odds_hdp_away*3) - (oddsGapHDP*2.5) - drawPenalty
+      (probAwayWin*100) + (Math.abs(SBI)*12) - (odds_hdp_away*3) - (oddsGapHDP*2.5) - drawPenalty
     ));
   }
 
-  // --- O/U ---
+  // --- O/U Anti-Meleset ---
   let probOver = 0, probUnder = 0, probExact = 0;
   for (let g=0; g<=10; g++) {
     const p = poisson(totalGoals, g);
@@ -144,27 +174,29 @@ function analisis() {
 
   let rekom_ou = "No Bet", ou_conf = 55;
   const oddsGapOU = Math.abs(odds_over - odds_under);
-  let h2hFactor = (avgH2HGoals > 2.6 && probOver > probUnder) ? 5 : 
+  let h2hFactor = (avgH2HGoals > 2.6 && probOver > probUnder) ? 5 :
                   (avgH2HGoals < 2.2 && probUnder > probOver) ? 5 : 0;
-
   let volFactor = (expHome > 1.5 && expAway > 1.5) ? 6 : 0;
   let riskPenalty = probExact > 0.20 ? 12 : (probExact > 0.15 ? 6 : 0);
+  let defenseFactor = (home_ga < 1.0 && away_ga < 1.0) ? -8 : 0;
+  let bigMatchPenalty = totalGoals < 3.0 ? -6 : 0;
 
   if (probOver > 0.55 && odds_over < 2.20) {
     rekom_ou = `Over ${ou_line}`;
-    let base = probOver*100;
     ou_conf = Math.min(98, Math.max(50,
-      base + h2hFactor + volFactor - (odds_over*3) - (oddsGapOU*2.5) - riskPenalty
+      (probOver*100) + h2hFactor + volFactor - (odds_over*3) - (oddsGapOU*2.5) - riskPenalty + defenseFactor + bigMatchPenalty
     ));
   } else if (probUnder > 0.55 && odds_under < 2.20) {
     rekom_ou = `Under ${ou_line}`;
-    let base = probUnder*100;
     ou_conf = Math.min(98, Math.max(50,
-      base + h2hFactor + volFactor - (odds_under*3) - (oddsGapOU*2.5) - riskPenalty
+      (probUnder*100) + h2hFactor + volFactor - (odds_under*3) - (oddsGapOU*2.5) - riskPenalty - defenseFactor - bigMatchPenalty
     ));
   }
-
-  let riskNote = probExact > 0.15 
+  if (totalGoals < 2.3 && home_ga < 1.1 && away_ga < 1.1) {
+    rekom_ou = `Under ${ou_line}`;
+    ou_conf = Math.max(65, ou_conf);
+  }
+  let riskNote = probExact > 0.15
     ? `⚠️ Potensi push/jebakan di line ${ou_line} (≈${(probExact*100).toFixed(1)}%)`
     : "";
 
@@ -172,7 +204,6 @@ function analisis() {
   const probHomeScored = 1 - poisson(expHome, 0);
   const probAwayScored = 1 - poisson(expAway, 0);
   const probBTTS = probHomeScored * probAwayScored;
-
   let boostBTTS = (expHome > 1.2 && expAway > 1.2 && totalGoals > 2.8) ? 12 : 0;
   const rekom_btts = probBTTS > 0.55 ? "BTTS Yes" : "BTTS No";
   const btts_conf = Math.min(98, Math.max(50, (probBTTS*100) + boostBTTS));
@@ -182,8 +213,6 @@ function analisis() {
   const impliedOver = 1 / odds_over;
   const impliedUnder = 1 / odds_under;
   const marketOverProb = impliedOver / (impliedOver + impliedUnder);
-  const marketUnderProb = impliedUnder / (impliedOver + impliedUnder);
-
   if (Math.abs(probOver - marketOverProb) > 0.20) {
     trapNote = "🚨 GAP BESAR: Model vs Odds pasar sangat berbeda → indikasi jebakan!";
   } else if (Math.abs(odds_over - odds_under) < 0.1) {
@@ -193,6 +222,8 @@ function analisis() {
   // --- Output ---
   document.getElementById("output").textContent = `
 📊 Prediksi Pertandingan: ${home} vs ${away}
+
+⚡ Auto-SBI (Rank+Form+GD): ${SBI.toFixed(2)}
 
 ⚽ Expected Goals:
    ${home}: ${expHome.toFixed(2)}
@@ -218,4 +249,4 @@ function analisis() {
 }
 </script>
 </body>
-  </html>
+</html>
