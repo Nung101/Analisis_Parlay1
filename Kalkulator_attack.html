@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Attack/Defense Strength & H2H Diff</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 30px auto; padding: 25px; background: #f9f9f9; border-radius: 1Oke, mari kita buat satu kalkulator HTML lagi yang lebih komprehensif, menggabungkan:
-
-1.  **Attack Strength (Home & Away)**
-2.  **Defense Strength (Home & Away)**
-3.  **H2H Diff (Head-to-Head Difference)**
-
-Kalkulator ini akan>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 30px auto; padding: 25px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         h2 { color: #333; text-align: center; margin-bottom: 25px; }
         p { text-align: center; color: #666; margin-bottom: 20px; }
@@ -31,7 +24,14 @@ Kalkulator ini akan>
     </style>
 </head>
 <body>
-    <h2>:</label>
+    <h2>⚽ Kalkulator Attack/Defense Strength & H2H Diff</h2>
+    <p>Hitung semua parameter strength dan Head-to-Head Difference yang diperlukan untuk model prediksi utama Anda.</p>
+
+    <div class="input-section">
+        <h3>1. Data Performa Tim (Tim A)</h3>
+        <p class="warning">Gunakan rata-rata dari kompetisi yang sama (misal, La Liga atau Liga Champions).</p>
+        <div class="input-group">
+            <label for="teamAGoalsScoredHomeAvg">Tim A: Rata-rata Gol Dicetak di Kandang:</label>
             <input type="number" id="teamAGoalsScoredHomeAvg" step="0.01" value="2.1">
         </div>
         <div class="input-group">
@@ -148,9 +148,9 @@ Kalkulator ini akan>
 
             // --- 2. Get League Averages Data ---
             const leagueAvgGoalsScoredHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsScoredHomeTeams').value);
-            const leagueAvgGoalsConcededHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededHomeTeams').value);
+            const leagueAvgGoalsConcededHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededHomeTeams').value); // This is goals scored by away teams
             const leagueAvgGoalsScoredAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsScoredAwayTeams').value);
-            const leagueAvgGoalsConcededAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededAwayTeams').value);
+            const leagueAvgGoalsConcededAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededAwayTeams').value); // This is goals scored by home teams
             
             // Basic validation for league averages
             if (leagueAvgGoalsScoredHomeTeams <= 0 || leagueAvgGoalsConcededHomeTeams <= 0 ||
@@ -162,9 +162,7 @@ Kalkulator ini akan>
             // --- 3. Validate all inputs ---
             const allInputs = [
                 teamAGoalsScoredHomeAvg, teamAGoalsConcededHomeAvg, teamAGoalsScoredAwayAvg, teamAGoalsConcededAwayAvg,
-                teamBGoalsScoredHomeAvg, teamBGoalsConcededHomeAvg, teamBGoalsScoredAwayAvg, teamBGoalsConcededAwayAvg,
-                leagueAvgGoalsScoredHomeTeams, leagueAvgGoalsConcededHomeTeams,
-                leagueAvgGoalsScoredAwayTeams, leagueAvgGoalsConcededAwayTeams
+                teamBGoalsScoredHomeAvg, teamBGoalsConcededHomeAvg, teamBGoalsScoredAwayAvg, teamBGoalsConcededAwayAvg
             ];
 
             if (allInputs.some(isNaN)) {
@@ -173,18 +171,20 @@ Kalkulator ini akan>
             }
 
             // --- Calculate Attack Strength ---
+            // Formula: Team's Goals Scored / League Avg Goals Scored by that team type (Home/Away)
             const homeAttackStrengthA = teamAGoalsScoredHomeAvg / leagueAvgGoalsScoredHomeTeams;
             const awayAttackStrengthA = teamAGoalsScoredAwayAvg / leagueAvgGoalsScoredAwayTeams;
             const homeAttackStrengthB = teamBGoalsScoredHomeAvg / leagueAvgGoalsScoredHomeTeams;
             const awayAttackStrengthB = teamBGoalsScoredAwayAvg / leagueAvgGoalsScoredAwayTeams;
 
             // --- Calculate Defense Strength ---
-            // A team's defense strength is compared against the goals SCORED by the opposing team type
-            // e.g., Home Defense A is how well A defends against away teams.
-            const homeDefenseStrengthA = teamAGoalsConcededHomeAvg / leagueAvgGoalsConcededAwayTeams; // How well A home concedes against away teams goals
-            const awayDefenseStrengthA = teamAGoalsConcededAwayAvg / leagueAvgGoalsConcededHomeTeams; // How well A away concedes against home teams goals
-            const homeDefenseStrengthB = teamBGoalsConcededHomeAvg / leagueAvgGoalsConcededAwayTeams; // How well B home concedes against away teams goals
-            const awayDefenseStrengthB = teamBGoalsConcededAwayAvg / leagueAvgGoalsConcededHomeTeams; // How well B away concedes against home teams goals
+            // Formula: Team's Goals Conceded / League Avg Goals Conceded by that team type (Home/Away)
+            // League Avg Goals Conceded by Home teams is Goals Scored by Away teams
+            // League Avg Goals Conceded by Away teams is Goals Scored by Home teams
+            const homeDefenseStrengthA = teamAGoalsConcededHomeAvg / leagueAvgGoalsConcededHomeTeams; // A home concedes against away team goals
+            const awayDefenseStrengthA = teamAGoalsConcededAwayAvg / leagueAvgGoalsConcededAwayTeams; // A away concedes against home team goals
+            const homeDefenseStrengthB = teamBGoalsConcededHomeAvg / leagueAvgGoalsConcededHomeTeams; // B home concedes against away team goals
+            const awayDefenseStrengthB = teamBGoalsConcededAwayAvg / leagueAvgGoalsConcededAwayTeams; // B away concedes against home team goals
 
             // --- Calculate H2H Diff ---
             let h2hTotalDiff = 0;
@@ -202,24 +202,25 @@ Kalkulator ini akan>
 
             // --- Display Results ---
             resultsDiv.innerHTML = `
-                <h3>Hasil Kalkulasi</h3>
-                <h4>Tim A (Misal: Barcelona)</h4>
-                <p><strong>Attack Strength (Home):</strong> ${homeAttackStrengthA.toFixed(2)}</p>
-                <p><strong>Defense Strength (Home):</strong> ${homeDefenseStrengthA.toFixed(2)}</p>
-                <p><strong>Attack Strength (Away):</strong> ${awayAttackStrengthA.toFixed(2)}</p>
-                <p><strong>Defense Strength (Away):</strong> ${awayDefenseStrengthA.toFixed(2)}</p>
+                <h3>Hasil Kalkulasi untuk Model Prediksi Utama</h3>
+                <h4>Tim A</h4>
+                <p><strong>Input 'homeAttack' (Jika Tim A bermain kandang):</strong> ${homeAttackStrengthA.toFixed(2)}</p>
+                <p><strong>Input 'awayAttack' (Jika Tim A bermain tandang):</strong> ${awayAttackStrengthA.toFixed(2)}</p>
+                <p><strong>Input 'homeDef' (Jika Tim A bermain kandang):</strong> ${homeDefenseStrengthA.toFixed(2)}</p>
+                <p><strong>Input 'awayDef' (Jika Tim A bermain tandang):</strong> ${awayDefenseStrengthA.toFixed(2)}</p>
                 
-                <h4>Tim B (Misal: Bayern Munchen)</h4>
-                <p><strong>Attack Strength (Home):</strong> ${homeAttackStrengthB.toFixed(2)}</p>
-                <p><strong>Defense Strength (Home):</strong> ${homeDefenseStrengthB.toFixed(2)}</p>
-                <p><strong>Attack Strength (Away):</strong> ${awayAttackStrengthB.toFixed(2)}</p>
-                <p><strong>Defense Strength (Away):</strong> ${awayDefenseStrengthB.toFixed(2)}</p>
+                <h4>Tim B</h4>
+                <p><strong>Input 'homeAttack' (Jika Tim B bermain kandang):</strong> ${homeAttackStrengthB.toFixed(2)}</p>
+                <p><strong>Input 'awayAttack' (Jika Tim B bermain tandang):</strong> ${awayAttackStrengthB.toFixed(2)}</p>
+                <p><strong>Input 'homeDef' (Jika Tim B bermain kandang):</strong> ${homeDefenseStrengthB.toFixed(2)}</p>
+                <p><strong>Input 'awayDef' (Jika Tim B bermain tandang):</strong> ${awayDefenseStrengthB.toFixed(2)}</p>
 
                 <h4>Head-to-Head Difference (A - B)</h4>
-                <p><strong>H2H Diff (A - B):</strong> ${h2hDiff.toFixed(2)}</p>
+                <p><strong>Input 'h2hDiff':</strong> ${h2hDiff.toFixed(2)}</p>
 
                 <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
-                    <em>Gunakan nilai-nilai ini untuk mengisi parameter di kalkulator prediksi utama Anda.</em>
+                    <em>Gunakan nilai-nilai ini untuk mengisi parameter di kalkulator prediksi utama Anda.<br>
+                    Perhatikan apakah Tim A atau Tim B yang bermain kandang untuk memilih Attack/Defense Strength yang sesuai.</em>
                 </p>
             `;
         }
@@ -227,3 +228,4 @@ Kalkulator ini akan>
 </body>
 </html>
 
+    
