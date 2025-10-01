@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator HDP & O/U</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9; }
+    h1 { text-align:center; }
+    label { display:block; margin-top:6px; }
+    input, select, button { padding:6px; margin-top:4px; width:100%; }
+    .container { max-width:1000px; margin:auto; background:white; padding:20px; border-radius:8px; box-shadow:0 0 8px rgba(0,0,0,0.1); }
+    .row { display:flex; flex-wrap:wrap; gap:20px; }
+    .col { flex:1; min-width:200px; }
+    #result { margin-top:20px; padding:10px; border:1px solid #ddd; background:#fafafa; }
+    button { cursor:pointer; }
+    button.secondary { background:#ddd; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚽ Kalkulator HDP & Over/Under</h1>
+    <div class="row">
+      <div class="col">
+        <label>Kompetisi / Liga</label>
+        <select id="leagueSelect">
+          <option value="">-- Pilih Liga --</option>
+          <option>Premier League</option>
+          <option>Championship</option>
+          <option>FA Cup</option>
+          <option>EFL Cup (Carabao Cup)</option>
+          <option>La Liga</option>
+          <option>Segunda División</option>
+          <option>Copa del Rey</option>
+          <option>Serie A</option>
+          <option>Serie B</option>
+          <option>Coppa Italia</option>
+          <option>Bundesliga</option>
+          <option>2. Bundesliga</option>
+          <option>DFB-Pokal</option>
+          <option>Ligue 1</option>
+          <option>Ligue 2</option>
+          <option>Coupe de France</option>
+          <option>Eredivisie</option>
+          <option>Eerste Divisie</option>
+          <option>KNVB Cup</option>
+          <option>Primeira Liga</option>
+          <option>Taça de Portugal</option>
+          <option>Swiss Super League</option>
+          <option>Swiss Cup</option>
+          <option>Süper Lig</option>
+          <option>Turkish Cup</option>
+          <option>Super League Greece</option>
+          <option>Greek Cup</option>
+          <option>Russian Premier League</option>
+          <option>Russian Cup</option>
+          <option>Liga I</option>
+          <option>Cupa României</option>
+          <option>Ekstraklasa</option>
+          <option>Polish Cup</option>
+          <option>HNL</option>
+          <option>Croatian Cup</option>
+          <option>Latvia Higher League</option>
+          <option>Latvian Cup</option>
+          <option>Meistriliiga</option>
+          <option>Estonian Cup</option>
+          <option>Allsvenskan</option>
+          <option>Svenska Cupen</option>
+          <option>Eliteserien</option>
+          <option>Norwegian Cup</option>
+          <option>Superliga</option>
+          <option>1st Division</option>
+          <option>Danish Cup</option>
+          <option>Veikkausliiga</option>
+          <option>Ykkösliiga</option>
+          <option>Ykkönen</option>
+          <option>Suomen Cup</option>
+          <option>Úrvalsdeild</option>
+          <option>Icelandic Cup</option>
+          <option>Premier Division</option>
+          <option>FAI Cup</option>
+          <option>UEFA Champions League</option>
+          <option>UEFA Europa League</option>
+          <option>UEFA Conference League</option>
+          <option>World Cup</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Rata-rata Gol Liga</label>
+        <input id="leagueAvg" type="number" step="0.01" readonly />
+      </div>
+      <div class="col">
+        <label>Home GF</label>
+        <input id="homeGF" type="number" step="0.01" value="1.5" />
+        <label>Home GA</label>
+        <input id="homeGA" type="number" step="0.01" value="1.2" />
+      </div>
+      <div class="col">
+        <label>Away GF</label>
+        <input id="awayGF" type="number" step="0.01" value="1.4" />
+        <label>Away GA</label>
+        <input id="awayGA" type="number" step="0.01" value="1.3" />
+      </div>
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col">
+        <label>Odds Over 2.5</label>
+        <input id="oddsOver" type="number" step="0.01" value="1.90" />
+        <label style="margin-top:8px">Odds Under 2.5</label>
+        <input id="oddsUnder" type="number" step="0.01" value="1.90" />
+      </div>
+      <div class="col">
+        <label>Odds Home Win</label>
+        <input id="oddsHome" type="number" step="0.01" value="2.20" />
+        <label style="margin-top:8px">Odds Draw</label>
+        <input id="oddsDraw" type="number" step="0.01" value="3.20" />
+      </div>
+      <div class="col">
+        <label>Odds Away Win</label>
+        <input id="oddsAway" type="number" step="0.01" value="3.10" />
+        <label style="margin-top:8px">Value Bet Threshold (%)</label>
+        <input id="valueThreshPercent" type="number" step="0.1" value="5" />
+      </div>
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col">
+        <label>Line HDP</label>
+        <input id="hdpLine" type="number" step="0.25" value="-0.5" />
+      </div>
+      <div class="col">
+        <label>Odds Home (HDP)</label>
+        <input id="oddsHdpHome" type="number" step="0.01" value="1.92" />
+      </div>
+      <div class="col">
+        <label>Odds Away (HDP)</label>
+        <input id="oddsHdpAway" type="number" step="0.01" value="1.98" />
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button id="btnAnalyze">🔎 Analisis Sekarang</button>
+      <button id="btnReset" class="secondary" style="margin-left:8px">Reset</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+<script>
+  // --- Data Rata-rata Gol Liga & Kompetisi ---
+const leagueMeta = {
+  "Premier League": { avg:2.65, baseK:1.2, homeBias:0.08, reliability:0.9 },
+  "Championship": { avg:2.45, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "FA Cup": { avg:3.20, baseK:1.25, homeBias:0.05, reliability:0.7 },
+  "EFL Cup (Carabao Cup)": { avg:3.10, baseK:1.25, homeBias:0.05, reliability:0.7 },
+
+  "La Liga": { avg:2.62, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Segunda División": { avg:2.55, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Copa del Rey": { avg:2.95, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Serie A": { avg:2.56, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Serie B": { avg:2.47, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Coppa Italia": { avg:3.00, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Bundesliga": { avg:3.14, baseK:1.25, homeBias:0.09, reliability:0.95 },
+  "2. Bundesliga": { avg:3.02, baseK:1.2, homeBias:0.08, reliability:0.9 },
+  "DFB-Pokal": { avg:4.19, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Ligue 1": { avg:2.96, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Ligue 2": { avg:2.41, baseK:1.2, homeBias:0.06, reliability:0.85 },
+  "Coupe de France": { avg:3.20, baseK:1.25, homeBias:0.05, reliability:0.7 },
+
+  "Eredivisie": { avg:2.98, baseK:1.2, homeBias:0.08, reliability:0.9 },
+  "Eerste Divisie": { avg:3.10, baseK:1.25, homeBias:0.07, reliability:0.85 },
+  "KNVB Cup": { avg:3.80, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Primeira Liga": { avg:2.87, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Taça de Portugal": { avg:2.90, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Swiss Super League": { avg:3.33, baseK:1.25, homeBias:0.08, reliability:0.9 },
+  "Swiss Cup": { avg:3.50, baseK:1.25, homeBias:0.05, reliability:0.7 },
+
+  "Süper Lig": { avg:2.94, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Turkish Cup": { avg:2.90, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Super League Greece": { avg:2.97, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Greek Cup": { avg:2.30, baseK:1.2, homeBias:0.05, reliability:0.7 },
+
+  "Russian Premier League": { avg:2.70, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Russian Cup": { avg:2.80, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Liga I": { avg:2.67, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Cupa României": { avg:3.20, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Ekstraklasa": { avg:2.85, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Polish Cup": { avg:2.90, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "HNL": { avg:2.36, baseK:1.2, homeBias:0.07, reliability:0.8 },
+  "Croatian Cup": { avg:3.10, baseK:1.25, homeBias:0.05, reliability:0.7 },
+
+  "Latvia Higher League": { avg:2.89, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Latvian Cup": { avg:4.90, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Meistriliiga": { avg:3.22, baseK:1.25, homeBias:0.07, reliability:0.85 },
+  "Estonian Cup": { avg:4.50, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Allsvenskan": { avg:2.83, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Svenska Cupen": { avg:3.10, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Eliteserien": { avg:2.83, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Norwegian Cup": { avg:3.60, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "Superliga": { avg:3.27, baseK:1.25, homeBias:0.08, reliability:0.9 },
+  "1st Division": { avg:2.81, baseK:1.2, homeBias:0.07, reliability:0.85 },
+  "Danish Cup": { avg:4.00, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Veikkausliiga": { avg:2.93, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "Ykkösliiga": { avg:3.02, baseK:1.25, homeBias:0.07, reliability:0.85 },
+  "Ykkönen": { avg:3.51, baseK:1.25, homeBias:0.07, reliability:0.8 },
+  "Suomen Cup": { avg:4.00, baseK:1.3, homeBias:0.05, reliability:0.7 },
+
+  "Úrvalsdeild": { avg:3.62, baseK:1.3, homeBias:0.08, reliability:0.8 },
+  "Icelandic Cup": { avg:5.00, baseK:1.35, homeBias:0.05, reliability:0.7 },
+
+  "Premier Division": { avg:2.26, baseK:1.2, homeBias:0.07, reliability:0.8 },
+  "FAI Cup": { avg:3.00, baseK:1.25, homeBias:0.05, reliability:0.75 },
+
+  "UEFA Champions League": { avg:3.10, baseK:1.25, homeBias:0.07, reliability:0.9 },
+  "UEFA Europa League": { avg:2.85, baseK:1.2, homeBias:0.07, reliability:0.9 },
+  "UEFA Conference League": { avg:2.71, baseK:1.2, homeBias:0.07, reliability:0.85 },
+
+  "World Cup": { avg:2.70, baseK:1.2, homeBias:0.07, reliability:0.85 }
+};
+ // --- Update otomatis saat pilih liga ---
+document.getElementById("leagueSelect").addEventListener("change", function(){
+  const sel = this.value;
+  const meta = leagueMeta[sel];
+  document.getElementById("leagueAvg").value = meta ? meta.avg : "";
+});
+
+// --- Fungsi matematika ---
+function poisson(lmb, k) {
+  return (Math.pow(lmb, k) * Math.exp(-lmb)) / factorial(k);
+}
+function factorial(n) {
+  if (n === 0) return 1;
+  let res = 1;
+  for (let i = 1; i <= n; i++) res *= i;
+  return res;
+}
+
+// --- Analisis ---
+function analyze() {
+  const league = document.getElementById("leagueSelect").value;
+  const meta = leagueMeta[league] || {avg:2.5, baseK:1.2, homeBias:0.08, reliability:0.5};
+
+  let homeGF = parseFloat(document.getElementById("homeGF").value) || 1.4;
+  let homeGA = parseFloat(document.getElementById("homeGA").value) || 1.2;
+  let awayGF = parseFloat(document.getElementById("awayGF").value) || 1.3;
+  let awayGA = parseFloat(document.getElementById("awayGA").value) || 1.5;
+
+  const leagueAvg = meta.avg;
+  const lambdaHome = (homeGF * awayGA / leagueAvg) * (1 + meta.homeBias);
+  const lambdaAway = (awayGF * homeGA / leagueAvg);
+
+  let maxGoals = 6;
+  let probHome = 0, probDraw = 0, probAway = 0;
+  let over25 = 0, under25 = 0;
+
+  for (let i=0;i<=maxGoals;i++){
+    for (let j=0;j<=maxGoals;j++){
+      const p = poisson(lambdaHome,i)*poisson(lambdaAway,j);
+      if(i>j) probHome += p;
+      else if(i===j) probDraw += p;
+      else probAway += p;
+
+      if(i+j >= 3) over25 += p;
+      else under25 += p;
+    }
+  }
+
+  const oddsOver = parseFloat(document.getElementById("oddsOver").value);
+  const oddsUnder = parseFloat(document.getElementById("oddsUnder").value);
+  const oddsHome = parseFloat(document.getElementById("oddsHome").value);
+  const oddsDraw = parseFloat(document.getElementById("oddsDraw").value);
+  const oddsAway = parseFloat(document.getElementById("oddsAway").value);
+  const oddsHdpHome = parseFloat(document.getElementById("oddsHdpHome").value);
+  const oddsHdpAway = parseFloat(document.getElementById("oddsHdpAway").value);
+  const hdpLine = parseFloat(document.getElementById("hdpLine").value);
+  const valueThresh = (parseFloat(document.getElementById("valueThreshPercent").value)||5)/100;
+
+  // Expected Value
+  const evOver = (over25*oddsOver - (1-over25));
+  const evUnder = (under25*oddsUnder - (1-under25));
+  const evHome = (probHome*oddsHome - (1-probHome));
+  const evDraw = (probDraw*oddsDraw - (1-probDraw));
+  const evAway = (probAway*oddsAway - (1-probAway));
+
+  let recs = [];
+  if(evOver >= valueThresh) recs.push("✅ Value Bet: Over 2.5 ("+ (evOver*100).toFixed(1)+"%)");
+  if(evUnder >= valueThresh) recs.push("✅ Value Bet: Under 2.5 ("+ (evUnder*100).toFixed(1)+"%)");
+  if(evHome >= valueThresh) recs.push("✅ Value Bet: Home Win ("+ (evHome*100).toFixed(1)+"%)");
+  if(evDraw >= valueThresh) recs.push("✅ Value Bet: Draw ("+ (evDraw*100).toFixed(1)+"%)");
+  if(evAway >= valueThresh) recs.push("✅ Value Bet: Away Win ("+ (evAway*100).toFixed(1)+"%)");
+
+  // Analisis HDP sederhana
+  let hdpRec = "";
+  if(probHome - probAway > 0.1) hdpRec = "Rekomendasi HDP: Home "+hdpLine;
+  else if(probAway - probHome > 0.1) hdpRec = "Rekomendasi HDP: Away "+(-hdpLine);
+  else hdpRec = "HDP seimbang / no bet";
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = `
+    <h3>Hasil Analisis (${league})</h3>
+    <p><b>Probabilitas</b><br/>
+    Home: ${(probHome*100).toFixed(1)}% | Draw: ${(probDraw*100).toFixed(1)}% | Away: ${(probAway*100).toFixed(1)}%</p>
+    <p>Over 2.5: ${(over25*100).toFixed(1)}% | Under 2.5: ${(under25*100).toFixed(1)}%</p>
+    <p><b>Rekomendasi:</b><br/>${recs.join("<br/>") || "❌ Tidak ada value bet signifikan"}</p>
+    <p><b>${hdpRec}</b></p>
+  `;
+  }
+  // --- Tombol ---
+document.getElementById("btnAnalyze").addEventListener("click", analyze);
+document.getElementById("btnReset").addEventListener("click", () => {
+  document.querySelectorAll("input").forEach(inp => {
+    if(inp.type === "number" && !inp.hasAttribute("readonly")) inp.value = "";
+  });
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("leagueSelect").value = "";
+  document.getElementById("leagueAvg").value = "";
+});
+</script>
+</body>
+</html>
