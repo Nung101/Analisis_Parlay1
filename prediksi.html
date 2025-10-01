@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Prediksi Parlay Analyzer - Ultimate+++++</title>
+  <title>Prediksi Parlay Analyzer - Ultimate++++++</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
     h1 { text-align: center; }
@@ -15,7 +15,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Prediksi Parlay Analyzer ⚽ - Ultimate+++++</h1>
+    <h1>Prediksi Parlay Analyzer ⚽ - Ultimate++++++</h1>
 
     <label>Home Team</label>
     <input id="home" placeholder="Home Team">
@@ -200,6 +200,14 @@ function analisis() {
     ? `⚠️ Potensi push/jebakan di line ${ou_line} (≈${(probExact*100).toFixed(1)}%)`
     : "";
 
+  // --- Bias O/U ---
+  let ouBias = "Netral";
+  if (totalGoals > 3.0 || (expHome > 1.5 && expAway > 1.5) || avgH2HGoals > 2.7) {
+    ouBias = "Condong ke Over (karena potensi gol tinggi)";
+  } else if (totalGoals < 2.3 || (home_ga < 1.0 && away_ga < 1.0) || avgH2HGoals < 2.2) {
+    ouBias = "Condong ke Under (karena pertahanan kuat / gol rendah)";
+  }
+
   // --- BTTS ---
   const probHomeScored = 1 - poisson(expHome, 0);
   const probAwayScored = 1 - poisson(expAway, 0);
@@ -238,6 +246,7 @@ function analisis() {
    Rekomendasi: ${rekom_ou}
    Confidence: ${ou_conf.toFixed(1)}%
    ${riskNote}
+   🔎 Bias Model: ${ouBias}
 
 🔗 BTTS:
    Rekomendasi: ${rekom_btts}
@@ -249,4 +258,4 @@ function analisis() {
 }
 </script>
 </body>
-</html>
+  </html>
