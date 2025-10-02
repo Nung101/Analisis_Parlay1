@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kalkulator Attack/Defense & Rata-rata Gol</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;margin:20px}
+  .card{max-width:880px;margin:0 auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
+  h1{font-size:18px;margin:0 0 12px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1;min-width:200px}
+  label{display:block;font-size:13px;margin-top:8px;color:#333}
+  input,select{width:100%;padding:8px;border:1px solid #d7dce3;border-radius:6px;font-size:14px}
+  button{margin-top:12px;padding:8px 12px;border-radius:8px;border:0;background:#0b69ff;color:#fff;cursor:pointer}
+  button.alt{background:#28a745}
+  #out{margin-top:14px;padding:12px;background:#fbfeff;border:1px solid #e5f0ff;border-radius:8px;white-space:pre-wrap}
+  .muted{font-size:13px;color:#666;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Kalkulator Attack/Defense Strength & Rata-rata Gol</h1>
+
+    <div class="row">
+      <div class="col">
+        <label>Pilih Liga / Kompetisi</label>
+        <select id="league"></select>
+      </div>
+
+      <div class="col">
+        <label>League Avg Home GF (optional override)</label>
+        <input id="leagueHomeGF" type="number" step="0.01"/>
+      </div>
+
+      <div class="col">
+        <label>League Avg Away GF (optional override)</label>
+        <input id="leagueAwayGF" type="number" step="0.01"/>
+      </div>
+    </div>
+
+    <h3 style="margin-top:12px">Data Tim</h3>
+    <div class="row">
+      <div class="col">
+        <label>Total Gol dicetak Home (GF)</label>
+        <input id="homeGFtotal" type="number" step="1" value="14"/>
+        <label>Jumlah Match Home</label>
+        <input id="homeMatches" type="number" step="1" value="10"/>
+        <label>Total Kebobolan Home (GA)</label>
+        <input id="homeGAtotal" type="number" step="1" value="13"/>
+      </div>
+
+      <div class="col">
+        <label>Total Gol dicetak Away (GF)</label>
+        <input id="awayGFtotal" type="number" step="1" value="13"/>
+        <label>Jumlah Match Away</label>
+        <input id="awayMatches" type="number" step="1" value="10"/>
+        <label>Total Kebobolan Away (GA)</label>
+        <input id="awayGAtotal" type="number" step="1" value="14"/>
+      </div>
+
+      <div class="col">
+        <label>Sample size / catatan</label>
+        <input id="sampleN" type="number" step="1" value="10"/>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button id="btnStrength">Hitung Strength</button>
+      <button id="btnAvg" class="alt">Hitung Rata-rata Gol/GA</button>
+      <button id="btnReset" style="background:#6c757d;margin-left:8px">Reset</button>
+    </div>
+
+    <div id="out">Hasil akan tampil di sini setelah klik tombol.</div>
+  </div>
+
+<script>
+  // baseline per liga (home & away avg goals)
+  const leagueBaseline = {
+    "Premier League": {home:1.50, away:1.15},
+    "La Liga": {home:1.36, away:1.26},
+    "Serie A": {home:1.28, away:1.28},
+    "Bundesliga": {home:1.75, away:1.39},
+    "Ligue 1": {home:1.50, away:1.46},
+    "Eredivisie": {home:1.70, away:1.28},
+    "Primeira Liga": {home:1.60, away:1.27},
+    "Swiss Super League": {home:1.75, away:1.58},
+    "Süper Lig": {home:1.60, away:1.34},
+    "Super League Greece": {home:1.55, away:1.42},
+    "Russian Premier League": {home:1.40, away:1.30},
+    "Liga I": {home:1.38, away:1.29},
+    "Ekstraklasa": {home:1.50, away:1.35},
+    "HNL": {home:1.20, away:1.16},
+    "Latvia Higher League": {home:1.50, away:1.39},
+    "Meistriliiga": {home:1.65, away:1.57},
+    "Allsvenskan": {home:1.42, away:1.41},
+    "Eliteserien": {home:1.45, away:1.38},
+    "Superliga Denmark": {home:1.68, away:1.59},
+    "Veikkausliiga": {home:1.52, away:1.41},
+    "Úrvalsdeild": {home:1.85, away:1.77},
+    "Premier Division (Ireland)": {home:1.10, away:1.16},
+    "UEFA Champions League": {home:1.60, away:1.50},
+    "UEFA Europa League": {home:1.45, away:1.40},
+    "UEFA Conference League": {home:1.40, away:1.31},
+    "World Cup": {home:1.45, away:1.25}
+  };
+
+  // isi dropdown
+  const leagueSel = document.getElementById("league");
+  for (const k in leagueBaseline){
+    let opt=document.createElement("option");
+    opt.value=k; opt.textContent=k;
+    leagueSel.appendChild(opt);
+  }
+
+  function safeNum(v){v=parseFloat(v);return isNaN(v)?0:v;}
+
+  // Strength
+  document.getElementById("btnStrength").addEventListener("click", ()=>{
+    const leagueKey=leagueSel.value;
+    const base=leagueBaseline[leagueKey]||{home:1.45,away:1.20};
+    const leagueHome=safeNum(document.getElementById("leagueHomeGF").value)||base.home;
+    const leagueAway=safeNum(document.getElementById("leagueAwayGF").value)||base.away;
+
+    const homeGF=(safeNum(document.getElementById("homeGFtotal").value)/Math.max(1,safeNum(document.getElementById("homeMatches").value)));
+    const homeGA=(safeNum(document.getElementById("homeGAtotal").value)/Math.max(1,safeNum(document.getElementById("homeMatches").value)));
+    const awayGF=(safeNum(document.getElementById("awayGFtotal").value)/Math.max(1,safeNum(document.getElementById("awayMatches").value)));
+    const awayGA=(safeNum(document.getElementById("awayGAtotal").value)/Math.max(1,safeNum(document.getElementById("awayMatches").value)));
+
+    const AS_home=homeGF/leagueHome;
+    const AS_away=awayGF/leagueAway;
+    const DS_home=homeGA/leagueAway;
+    const DS_away=awayGA/leagueHome;
+
+    let out="Liga: "+leagueKey+"\\n";
+    out+="Baseline Home "+leagueHome.toFixed(2)+" | Away "+leagueAway.toFixed(2)+"\\n\\n";
+    out+="Home Attack Strength: "+AS_home.toFixed(3)+"\\n";
+    out+="Home Defense Strength: "+DS_home.toFixed(3)+"\\n";
+    out+="Away Attack Strength: "+AS_away.toFixed(3)+"\\n";
+    out+="Away Defense Strength: "+DS_away.toFixed(3)+"\\n";
+
+    document.getElementById("out").textContent=out;
+  });
+
+  // Average GF/GA
+  document.getElementById("btnAvg").addEventListener("click", ()=>{
+    const homeGFtot=safeNum(document.getElementById("homeGFtotal").value);
+    const homeGA= safeNum(document.getElementById("homeGAtotal").value);
+    const homeN=Math.max(1,safeNum(document.getElementById("homeMatches").value));
+    const awayGFtot=safeNum(document.getElementById("awayGFtotal").value);
+    const awayGA= safeNum(document.getElementById("awayGAtotal").value);
+    const awayN=Math.max(1,safeNum(document.getElementById("awayMatches").value));
+
+    const avgHomeGF=homeGFtot/homeN;
+    const avgHomeGA=homeGA/homeN;
+    const avgAwayGF=awayGFtot/awayN;
+    const avgAwayGA=awayGA/awayN;
+
+    let out="📊 Rata-rata Gol & Kebobolan\\n";
+    out+="Home GF avg: "+avgHomeGF.toFixed(2)+"\\n";
+    out+="Home GA avg: "+avgHomeGA.toFixed(2)+"\\n";
+    out+="Away GF avg: "+avgAwayGF.toFixed(2)+"\\n";
+    out+="Away GA avg: "+avgAwayGA.toFixed(2)+"\\n";
+
+    document.getElementById("out").textContent=out;
+  });
+
+  // Reset
+  document.getElementById("btnReset").addEventListener("click", ()=>{
+    leagueSel.value="";
+    document.getElementById("leagueHomeGF").value="";
+    document.getElementById("leagueAwayGF").value="";
+    document.getElementById("homeGFtotal").value="14";
+    document.getElementById("homeMatches").value="10";
+    document.getElementById("homeGAtotal").value="13";
+    document.getElementById("awayGFtotal").value="13";
+    document.getElementById("awayMatches").value="10";
+    document.getElementById("awayGAtotal").value="14";
+    document.getElementById("sampleN").value="10";
+    document.getElementById("out").textContent="Hasil akan tampil di sini setelah klik tombol.";
+  });
+</script>
+</body>
+  </html>
