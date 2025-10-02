@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deteksi Odds Trap Maksimal - HDP & Over/Under (H2H Kosong = Performa Tim)</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        h2, h3 { color: #333; }
+        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .odds-input { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        #result { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .recommendation { font-size: 18px; font-weight: bold; color: #007BFF; }
+        .trap-high { color: #ff0000; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 4px; margin: 10px 0; border-left: 5px solid #ff0000; }
+        .trap-medium { color: #ff8c00; background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0; border-left: 5px solid #ff8c00; }
+        .trap-low { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; border-left: 5px solid #28a745; }
+        .value { color: #28a745; font-weight: bold; }
+        .warning { color: #ff0000; font-style: italic; }
+        .trap-score { font-size: 20px; color: #dc3545; }
+        .form-note { color: #666; font-style: italic; margin-top: -5px; }
+    </style>
+</head>
+<body>
+    <h2>Deteksi Odds Trap Maksimal untuk HDP & Over/Under</h2>
+    <p>Masukkan data performa tim saat ini. H2H opsional: Jika kosong, hitung khusus berdasarkan performa tim terkini (tren gol, home/away form).</p>
+    
+    <form id="predictionForm">
+        <h3>Data Tim Home (5 match terakhir, tambah Home Advantage: +0.3 gol)</h3>
+        <label for="homeGoalsScored">Gol Dicetak (koma):</label>
+        <input type="text" id="homeGoalsScored" placeholder="2,3,1,4,2" required>
+        <div class="form-note">Bobot lebih pada match terakhir untuk tren saat ini.</div>
+        
+        <label for="homeGoalsConceded">Gol Kebobolan (koma):</label>
+        <input type="text" id="homeGoalsConceded" placeholder="1,2,0,1,3" required>
+        
+        <h3>Data Tim Away (5 match terakhir)</h3>
+        <label for="awayGoalsScored">Gol Dicetak (koma):</label>
+        <input type="text" id="awayGoalsScored" placeholder="1,2,1,0,2" required>
+        
+        <label for="awayGoalsConceded">Gol Kebobolan (koma):</label>
+        <input type="text" id="awayGoalsConceded" placeholder="2,1,3,2,1" required>
+        
+        <h3>Data H2H (Opsional - Kosongkan jika tim baru bertemu)</h3>
+        <label for="h2hTotals">Total Gol H2H (5 pertemuan, koma):</label>
+        <input type="text" id="h2hTotals" placeholder="3,2,4,1,2 (Kosongkan untuk performa tim saja)">
+        <div class="form-note">Jika kosong, prediksi berdasarkan performa tim saat ini (recent form).</div>
+        
+        <h3>Odds HDP (Line, Odds Saat Ini, & Perubahan)</h3>
+        <div class="odds-input">
+            <div>
+                <label>Home HDP Lines:</label>
+                <input type="text" id="homeHdpLines" placeholder="-0.5,0,+0.5" required>
+                <label>Home Odds Saat Ini:</label>
+                <input type="text" id="homeHdpOdds" placeholder="1.95,1.85,2.05" required>
+                <label>Home Perubahan:</label>
+                <input type="text" id="homeHdpChange" placeholder="-0.05,0,+0.1" required>
+            </div>
+            <div>
+                <label>Away HDP Lines:</label>
+                <input type="text" id="awayHdpLines" placeholder="+0.5,0,-0.5" required>
+                <label>Away Odds Saat Ini:</label>
+                <input type="text" id="awayHdpOdds" placeholder="1.85,1.95,2.00" required>
+                <label>Away Perubahan:</label>
+                <input type="text" id="awayHdpChange" placeholder="+0.05,0,-0.1" required>
+            </div>
+        </div>
+        
+        <h3>Odds Over/Under (Line 2.5)</h3>
+        <div class="odds-input">
+            <div>
+                <label>Over 2.5 Odds Saat Ini:</label>
+                <input type="number" id="overOdds" placeholder="1.90" step="0.01" required>
+                <label>Over Perubahan:</label>
+                <input type="number" id="overChange" placeholder="-0.05" step="0.01" required>
+            </div>
+            <div>
+                <label>Under 2.5 Odds Saat Ini:</label>
+                <input type="number" id="underOdds" placeholder="1.95" step="0.01" required>
+                <label>Under Perubahan:</label>
+                <input type="number" id="underChange" placeholder="+0.05" step="0.01" required>
+            </div>
+        </div>
+        
+        <button type="submit">Analisis Trap Maksimal</button>
+    </form>
+    
+    <div id="result" style="display: none;">
+        <h3>Hasil Analisis Trap</h3>
+        <div id="hdpTrap"></div>
+        <div id="ouTrap"></div>
+        <div id="overallTrap"></div>
+        <div class="warning">Catatan: Jika H2H kosong, perhitungan difokuskan pada performa tim saat ini. Verifikasi data live untuk akurasi.</div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Parse data performa
+            const homeScored = parseInputs(document.getElementById('homeGoalsScored').value);
+            const homeConceded = parseInputs(document.getElementById('homeGoalsConceded').value);
+            const awayScored = parseInputs(document.getElementById('awayGoalsScored').value);
+            const awayConceded = parseInputs(document.getElementById('awayGoalsConceded').value);
+            
+            // H2H handling
+            const h2hInput = document.getElementById('h2hTotals').value.trim();
+            const h2h = h2hInput ? parseInputs(h2hInput) : [];
+            const useH2H = h2h.length === 5; // Hanya gunakan jika tepat 5 nilai valid
+            
+            if (homeScored.length !== 5 || homeConceded.length !== 5 || awayScored.length !== 5 || awayConceded.length !== 5) {
+                alert('Masukkan tepat 5 nilai untuk performa Home dan Away.');
+                return;
+            }
+            if (h2hInput && !useH2H) {
+                alert('Jika H2H diisi, masukkan tepat 5 nilai valid.');
+                return;
+            }
+            
+            // Rata-rata dasar dengan home advantage
+            let avgHomeScored = homeScored.reduce((a, b) => a + b, 0) / 5 + 0.3;
+            let avgHomeConceded = homeConceded.reduce((a, b) => a + b, 0) / 5;
+            let avgAwayScored = awayScored.reduce((a, b) => a + b, 0) / 5;
+            let avgAwayConceded = awayConceded.reduce((a, b) => a + b, 0) / 5;
+            let avgH2hTotal = useH2H ? (h2h.reduce((a, b) => a + b, 0) / 5) : 0;
+            
+            // Khusus jika H2H kosong: Hitung dengan performa tim saat ini (tren recent form)
+            let totalExpectedGoals;
+            let performanceDiff;
+            let homeWinProb;
+            let ouProbOver;
+            let methodNote = '';
+            
+            if (!useH2H) {
+                // Tren performa saat ini: Bobot lebih pada 3 match terakhir (60% weight)
+                const recentWeight = 0.6;
+                const recentHomeScored = (homeScored.slice(-3).reduce((a, b) => a + b, 0) / 3) * recentWeight + 
+                                        (homeScored.slice(0, 2).reduce((a, b) => a + b, 0) / 2) * (1 - recentWeight);
+                const recentAwayScored = (awayScored.slice(-3).reduce((a, b) => a + b, 0) / 3) * recentWeight + 
+                                        (awayScored.slice(0, 2).reduce((a, b) => a + b, 0) / 2) * (1 - recentWeight);
+                
+                avgHomeScored = recentHomeScored + 0.3; // Adjust dengan tren + home adv
+                avgAwayScored = recentAwayScored;
+                
+                // Expected goals dari performa saat ini: Attack vs Defense matchup
+                const homeAttackVsAwayDefense = (avgHomeScored + (avgAwayConceded / 2)); // Home attack vs away defense
+                const awayAttackVsHomeDefense = (avgAwayScored + (avgHomeConceded / 2)); // Away attack vs home defense
+                totalExpectedGoals = (homeAttackVsAwayDefense + awayAttackVsHomeDefense) / 2;
+                
+                // Performa diff dengan penekanan tren
+                const homePerformance = avgHomeScored - avgHomeConceded;
+                const awayPerformance = avgAwayScored - avgAwayConceded;
+                performanceDiff = homePerformance - awayPerformance + 0.5; // Tambah faktor home form saat ini
+                
+                // Probabilitas HDP dari performa saat ini (tanpa H2H)
+                homeWinProb = Math.min(100, Math.max(0, 50 + performanceDiff * 20 + 5)); // +5% home bias
+                ouProbOver = Math.min(100, totalExpectedGoals * 40); // Adjust untuk tren gol
+                
+                methodNote = ' (Berdasarkan Performa Tim Saat Ini - Tren Recent Form)';
+            } else {
+                // Dengan H2H: Rumus campuran seperti sebelumnya
+                const homePerformance = avgHomeScored - avgHomeConceded;
+                const awayPerformance = avgAwayScored - avgAwayConceded;
+                performanceDiff = homePerformance - awayPerformance;
+                totalExpectedGoals = (avgHomeScored + avgAwayScored + avgH2hTotal) / 3;
+                
+                const h2hFactor = (avgH2hTotal / 2 - avgAwayScored) * 8;
+                homeWinProb = Math.min(100, Math.max(0, 50 + performanceDiff * 15 + h2hFactor));
+                ouProbOver = Math.min(100, totalExpectedGoals * 35);
+                
+                methodNote = ' (Berdasarkan Performa + H2H)';
+            }
+            
+            const awayWinProb = 100 - homeWinProb;
+            
+            // Parse odds (sama seperti sebelumnya)
+            const homeLines = parseInputs(document.getElementById('homeHdpLines').value);
+            const homeOdds = parseInputs(document.getElementById('homeHdpOdds').value);
+            const homeChanges = parseInputs(document.getElementById('homeHdpChange').value);
+            const awayLines = parseInputs(document.getElementById('awayHdpLines').value);
+            const awayOdds = parseInputs(document.getElementById('awayHdpOdds').value);
+            const awayChanges = parseInputs(document.getElementById('awayHdpChange').value);
+            const overOdds = parseFloat(document.getElementById('overOdds').value);
+            const overChange = parseFloat(document.getElementById('overChange').value);
+            const underOdds = parseFloat(document.getElementById('underOdds').value);
+            const underChange = parseFloat(document.getElementById('underChange').value);
+            
+            // Trap Detection (sama, tapi dengan probabilitas yang disesuaikan)
+            const trapThresholdHigh = 20;
+            const trapThresholdMedium = 15;
+            const movementThreshold = 0.1;
+            const keyNumbers = [0.5, 1.0];
+            
+            // HDP Trap
+            let hdpTrapScore = 0;
+            let hdpTrapHtml = `<p class="recommendation">**Model HDP:** Home Prob ${homeWinProb.toFixed(1)}% | Away ${awayWinProb.toFixed(1)}% (Diff: ${performanceDiff.toFixed(2)})${methodNote}</p>`;
+            let hdpValue = '';
+            
+            // Analisis Home lines
+            for (let i = 0; i < Math.min(homeLines.length, homeOdds.length, homeChanges.length); i++) {
+                const line = homeLines[i];
+                const odds = homeOdds[i];
+                const change = Math.abs(homeChanges[i] || 0);
+                const impliedProb = (1 / odds) * 100;
+                const probDiff = Math.abs(homeWinProb - impliedProb);
+                const isKeyNumber = keyNumbers.some(k => Math.abs(line + 0) === k);
+                const movementTrap = change > movementThreshold;
+                
+                hdpTrapScore += probDiff / 2 + (movementTrap ? 10 : 0) + (isKeyNumber ? 5 : 0);
+                
+                if (probDiff > trapThresholdHigh || (movementTrap && probDiff > trapThresholdMedium)) {
+                    hdpTrapHtml += `<div class="trap-high">Trap Tinggi Home ${line}: Discrepancy ${probDiff.toFixed(1)}% (Model: ${homeWinProb.toFixed(1)}% vs Implied: ${impliedProb.toFixed(1)}%). Fluktuasi ${change.toFixed(2)}. Saran: Hindari atau bet Away.</div>`;
+                } else if (probDiff > trapThresholdMedium || movementTrap) {
+                    hdpTrapHtml += `<div class="trap-medium">Trap Sedang Home ${line}: Perbedaan ${probDiff.toFixed(1)}% + fluktuasi ${change.toFixed(2)}.</div>`;
+                }
+                
+                if (impliedProb < homeWinProb - 5) {
+                    hdpValue += `<p class="value">Value: Home ${line} @ ${odds} (EV Positif).</p>`;
+                }
+            }
+            
+            // Analisis Away lines (mirip)
+            for (let i = 0; i < Math.min(awayLines.length, awayOdds.length, awayChanges.length); i++) {
+                const line = awayLines[i];
+                const odds = awayOdds[i];
+                const change = Math.abs(awayChanges[i] || 0);
+                const impliedProb = (1 / odds) * 100;
+                const probDiff = Math.abs(awayWinProb - impliedProb);
+                const isKeyNumber = keyNumbers.some(k => Math.abs(parseFloat(line) - k) < 0.1);
+                const movementTrap = change > movementThreshold;
+                
+                hdpTrapScore += probDiff / 2 + (movementTrap ? 10 : 0) + (isKeyNumber ? 5 : 0);
+                
+                if (probDiff > trapThresholdHigh || (movementTrap && probDiff > trapThresholdMedium)) {
+                    hdpTrapHtml += `<div class="trap-high">Trap Tinggi Away ${line}: Discrepancy ${probDiff.toFixed(1)}% (Model: ${awayWinProb.toFixed(1)}% vs Implied: ${impliedProb.toFixed(1)}%). Saran: Skip atau value Home.</div>`;
+                } else if (probDiff > trapThresholdMedium || movementTrap) {
+                    hdpTrapHtml += `<div class="trap-medium">Trap Sedang Away ${line}: Perbedaan ${probDiff.toFixed(1)}% + fluktuasi ${change.toFixed(2)}.</div>`;
+                }
+                
+                if (impliedProb < awayWinProb - 5) {
+                    hdpValue += `<p class="value">Value: Away ${line} @ ${odds}.</p>`;
+                }
+            }
+            
+            hdpTrapHtml += `<p>${hdpValue}</p><p class="trap-score">**Skor Trap HDP: ${Math.min(100, hdpTrapScore).toFixed(0)}% Risiko**</p>`;
+            
+            // OU Trap
+            let ouTrapScore = 0;
+            let ouTrapHtml = `<p class="recommendation">**Model Over/Under:** Over Prob ${ouProbOver.toFixed(1)}% (Expected Goals: ${totalExpectedGoals.toFixed(2)})${methodNote}</p>`;
+            let ouValue = '';
+            
+            const overImplied = (1 / overOdds) * 100;
+            const underImplied = (1 / underOdds) * 100;
+            const overProbDiff = Math.abs(ouProbOver - overImplied);
+            const underProbDiff = Math.abs((100 - ouProbOver) - underImplied);
+            const overMovement = Math.abs(overChange);
+            const underMovement = Math.abs(underChange);
+            const ouMovementTrap = overMovement > movementThreshold || underMovement > movementThreshold;
+            
+            ouTrapScore += (overProbDiff + underProbDiff) / 2 + (ouMovementTrap ? 15 : 0);
+            
+            if (overProbDiff > trapThresholdHigh || (ouMovementTrap && totalExpectedGoals > 2.5)) {
+                ouTrapHtml += `<div class="trap-high">Trap Tinggi Over 2.5: Discrepancy ${overProbDiff.toFixed(1)}% (Model: ${ouProbOver.toFixed(1)}% vs Implied: ${overImplied.toFixed(1)}%). Saran: Pertimbangkan Under.</div>`;
+            } else if (overProbDiff > trapThresholdMedium || ouMovementTrap) {
+                ouTrapHtml += `<div class="trap-medium">Trap Sedang Over 2.5: Perbedaan ${overProbDiff.toFixed(1)}% + fluktuasi ${overMovement.toFixed(2)}.</div>`;
+            }
+            
+            if (underProbDiff > trapThresholdHigh || (ouMovementTrap && totalExpectedGoals < 2.5)) {
+                ouTrapHtml += `<div class="trap-high">Trap Tinggi Under 2.5: Discrepancy ${underProbDiff.toFixed(1)}% (Model: ${(100 - ouProbOver).toFixed(1)}% vs Implied: ${underImplied.toFixed(1)}%). Saran: Hindari atau bet Over.</div>`;
+            } else if (underProbDiff > trapThresholdMedium || ouMovementTrap) {
+                ouTrapHtml += `<div class="trap-medium">Trap Sedang Under 2.5: Perbedaan ${underProbDiff.toFixed(1)}% + fluktuasi ${underMovement.toFixed(2)}.</div>`;
+            }
+            
+            if (overImplied < ouProbOver - 5) {
+                ouValue += `<p class="value">Value: Over 2.5 @ ${overOdds}.</p>`;
+            }
+            if (underImplied < (100 - ouProbOver) - 5) {
+                ouValue += `<p class="value">Value: Under 2.5 @ ${underOdds}.</p>`;
+            }
+            
+            ouTrapHtml += `<p>${ouValue}</p><p class="trap-score">**Skor Trap OU: ${Math.min(100, ouTrapScore).toFixed(0)}% Risiko**</p>`;
+            
+            // Overall Trap
+            const overallTrapScore = (hdpTrapScore + ouTrapScore) / 2;
+            let overallHtml = '';
+            if (overallTrapScore > trapThresholdHigh) {
+                overallHtml = `<div class="trap-high">**Trap Keseluruhan Tinggi (${overallTrapScore.toFixed(0)}%)**: Hindari taruhan. Tunggu stabilisasi.${methodNote}</div>`;
+            } else if (overallTrapScore > trapThresholdMedium) {
+                overallHtml = `<div class="trap-medium">**Trap Keseluruhan Sedang (${overallTrapScore.toFixed(0)}%)**: Waspada key lines.${methodNote}</div>`;
+            } else {
+                overallHtml = `<div class="trap-low">**Trap Rendah (${overallTrapScore.toFixed(0)}%)**: Aman untuk value bet.${methodNote}</div>`;
+            }
+            
+            // Tampilkan hasil
+            document.getElementById('hdpTrap').innerHTML = '<h4>Trap Analisis HDP</h4>' + hdpTrapHtml;
+            document.getElementById('ouTrap').innerHTML = '<h4>Trap Analisis Over/Under</h4>' + ouTrapHtml;
+            document.getElementById('overallTrap').innerHTML = '<h4>Trap Keseluruhan & Rekomendasi</h4>' + overallHtml;
+            document.getElementById('result').style.display = 'block';
+        });
+        
+        function parseInputs(input) {
+            return input.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
+        }
+    </script>
+</body>
+</html>
+
