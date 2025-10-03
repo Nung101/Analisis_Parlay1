@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perbandingan xG - OU & HDP + H2H Chart</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+    h2 { color: #222; }
+    .team { width: 48%; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px #ccc; }
+    .container { display: flex; gap: 4%; margin-bottom: 30px; }
+    pre { background: #222; color: #0f0; padding: 10px; border-radius: 5px; max-height: 350px; overflow-y: auto; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 13px; }
+    th { background: #ddd; }
+    canvas { background: #fff; border-radius: 8px; padding: 5px; margin-top: 10px; }
+    #h2h { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px #ccc; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Perbandingan xG: Over/Under & Handicap + H2H</h2>
+
+  <label>URL Tim 1:</label><br>
+  <input type="text" id="url1" size="60" value="https://understat.com/team/Arsenal/2025" /><br><br>
+
+  <label>URL Tim 2:</label><br>
+  <input type="text" id="url2" size="60" value="https://understat.com/team/Chelsea/2025" /><br><br>
+
+  <label>Pilih Jumlah Match:</label>
+  <select id="jumlah">
+    <option value="5">5</option>
+    <option value="10" selected>10</option>
+    <option value="15">15</option>
+    <option value="all">Semua</option>
+  </select>
+  <br><br>
+
+  <button onclick="bandingkan()">Bandingkan</button>
+
+  <div class="container">
+    <div class="team" id="team1"></div>
+    <div class="team" id="team2"></div>
+  </div>
+
+  <div id="h2h"></div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let dataTeam1, dataTeam2;
+
+    function rekomendasiOU(totalXG) {
+      if (totalXG >= 3.0) return "Over";
+      if (totalXG <= 2.3) return "Under";
+      return "Abu-abu";
+    }
+
+    function rekomendasiHDP(xgHome, xgAway) {
+      let selisih = xgHome - xgAway;
+      if (selisih >= 0.8) return "Home";
+      if (selisih <= -0.8) return "Away";
+      return "Imbang";
+    }
+
+    async function ambilData(url, jumlah, idDiv, chartPrefix) {
+      let res = await fetch(url);
+      let text = await res.text();
+
+      let jsonString = text.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/)[1];
+      let data = JSON.parse(jsonString);
+      let matches = data.props.pageProps.data.history;
+      let teamName = data.props.pageProps.data.id.title;
+
+      let lastMatches = (jumlah === "all") ? matches : matches.slice(-parseInt(jumlah));
+
+      let countOU = {Over:0, Under:0, "Abu-abu":0};
+      let countHDP = {Home:0, Away:0, Imbang:0};
+
+      let output = `<h3>${teamName}</h3><pre>`;
+      lastMatches.forEach(m => {
+        let xgHome = parseFloat(m.xG.h);
+        let xgAway = parseFloat(m.xG.a);
+        let totalXG = xgHome + xgAway;
+
+        let ou = rekomendasiOU(totalXG);
+        let hdp = rekomendasiHDP(xgHome, xgAway);
+
+        countOU[ou]++;
+        countHDP[hdp]++;
+
+        output += `${m.h.title} vs ${m.a.title}\n`;
+        output += `xG: ${xgHome.toFixed(2)} - ${xgAway.toFixed(2)} | Total: ${totalXG.toFixed(2)}\n`;
+        output += `➡️ OU: ${ou}\n`;
+        output += `➡️ HDP: ${hdp}\n\n`;
+      });
+      output += "</pre>";
+
+      let total = lastMatches.length;
+      let probOU = {
+        Over: ((countOU.Over/total)*100).toFixed(1),
+        Under: ((countOU.Under/total)*100).toFixed(1),
+        "Abu-abu": ((countOU["Abu-abu"]/total)*100).toFixed(1)
+      };
+      let probHDP = {
+        Home: ((countHDP.Home/total)*100).toFixed(1),
+        Away: ((countHDP.Away/total)*100).toFixed(1),
+        Imbang: ((countHDP.Imbang/total)*100).toFixed(1)
+      };
+
+      let summary = `
+        <table>
+          <tr><th>Kategori</th><th>Over</th><th>Under</th><th>Abu-abu</th></tr>
+          <tr>
+            <td>Over/Under</td>
+            <td>${countOU.Over} (${probOU.Over}%)</td>
+            <td>${countOU.Under} (${probOU.Under}%)</td>
+            <td>${countOU["Abu-abu"]} (${probOU["Abu-abu"]}%)</td>
+          </tr>
+        </table>
+        <br>
+        <table>
+          <tr><th>Kategori</th><th>Home</th><th>Away</th><th>Imbang</th></tr>
+          <tr>
+            <td>Handicap</td>
+            <td>${countHDP.Home} (${probHDP.Home}%)</td>
+            <td>${countHDP.Away} (${probHDP.Away}%)</td>
+            <td>${countHDP.Imbang} (${probHDP.Imbang}%)</td>
+          </tr>
+        </table>
+        <canvas id="${chartPrefix}OU" width="280" height="280"></canvas>
+        <canvas id="${chartPrefix}HDP" width="280" height="280"></canvas>
+      `;
+
+      document.getElementById(idDiv).innerHTML = output + summary;
+
+      // Chart OU
+      new Chart(document.getElementById(`${chartPrefix}OU`), {
+        type: "doughnut",
+        data: {
+          labels: ["Over", "Under", "Abu-abu"],
+          datasets: [{
+            data: [countOU.Over, countOU.Under, countOU["Abu-abu"]],
+            backgroundColor: ["#4caf50", "#f44336", "#ff9800"]
+          }]
+        },
+        options: { plugins: { title: { display: true, text: "Over/Under" } } }
+      });
+
+      // Chart HDP
+      new Chart(document.getElementById(`${chartPrefix}HDP`), {
+        type: "doughnut",
+        data: {
+          labels: ["Home", "Away", "Imbang"],
+          datasets: [{
+            data: [countHDP.Home, countHDP.Away, countHDP.Imbang],
+            backgroundColor: ["#2196f3", "#e91e63", "#9e9e9e"]
+          }]
+        },
+        options: { plugins: { title: { display: true, text: "Handicap" } } }
+      });
+
+      return { teamName, matches };
+    }
+
+    async function bandingkan() {
+      let url1 = document.getElementById("url1").value;
+      let url2 = document.getElementById("url2").value;
+      let jumlah = document.getElementById("jumlah").value;
+
+      document.getElementById("team1").innerHTML = "Loading...";
+      document.getElementById("team2").innerHTML = "Loading...";
+      document.getElementById("h2h").innerHTML = "";
+
+      dataTeam1 = await ambilData(url1, jumlah, "team1", "t1");
+      dataTeam2 = await ambilData(url2, jumlah, "team2", "t2");
+
+      tampilkanH2H(dataTeam1, dataTeam2);
+    }
+
+    function tampilkanH2H(t1, t2) {
+      let h2hMatches = [];
+
+      t1.matches.forEach(m => {
+        if ((m.h.title === t1.teamName && m.a.title === t2.teamName) ||
+            (m.h.title === t2.teamName && m.a.title === t1.teamName)) {
+          h2hMatches.push(m);
+        }
+      });
+
+      if (h2hMatches.length === 0) {
+        document.getElementById("h2h").innerHTML = "<h3>H2H</h3><p>Tidak ada pertemuan terdeteksi.</p>";
+        return;
+      }
+
+      let countOU = {Over:0, Under:0, "Abu-abu":0};
+      let countHDP = {Home:0, Away:0, Imbang:0};
+
+      let output = "<h3>H2H (Pertemuan Langsung)</h3><pre>";
+      h2hMatches.forEach(m => {
+        let xgHome = parseFloat(m.xG.h);
+        let xgAway = parseFloat(m.xG.a);
+        let totalXG = xgHome + xgAway;
+
+        let ou = rekomendasiOU(totalXG);
+        let hdp = rekomendasiHDP(xgHome, xgAway);
+
+        countOU[ou]++;
+        countHDP[hdp]++;
+
+        output += `${m.h.title} vs ${m.a.title}\n`;
+        output += `xG: ${xgHome.toFixed(2)} - ${xgAway.toFixed(2)} | Total: ${totalXG.toFixed(2)}\n`;
+        output += `➡️ OU: ${ou}\n`;
+        output += `➡️ HDP: ${hdp}\n\n`;
+      });
+      output += "</pre>";
+
+      let summary = `
+        <table>
+          <tr><th>Kategori</th><th>Over</th><th>Under</th><th>Abu-abu</th></tr>
+          <tr>
+            <td>Over/Under</td>
+            <td>${countOU.Over}</td>
+            <td>${countOU.Under}</td>
+            <td>${countOU["Abu-abu"]}</td>
+          </tr>
+        </table>
+        <br>
+        <table>
+          <tr><th>Kategori</th><th>Home</th><th>Away</th><th>Imbang</th></tr>
+          <tr>
+            <td>Handicap</td>
+            <td>${countHDP.Home}</td>
+            <td>${countHDP.Away}</td>
+            <td>${countHDP.Imbang}</td>
+          </tr>
+        </table>
+        <canvas id="h2hOU" width="280" height="280"></canvas>
+        <canvas id="h2hHDP" width="280" height="280"></canvas>
+      `;
+
+      document.getElementById("h2h").innerHTML = output + summary;
+
+      // Chart H2H OU
+      new Chart(document.getElementById("h2hOU"), {
+        type: "pie",
+        data: {
+          labels: ["Over", "Under", "Abu-abu"],
+          datasets: [{
+            data: [countOU.Over, countOU.Under, countOU["Abu-abu"]],
+            backgroundColor: ["#4caf50", "#f44336", "#ff9800"]
+          }]
+        },
+        options: { plugins: { title: { display: true, text: "H2H Over/Under" } } }
+      });
+
+      // Chart H2H HDP
+      new Chart(document.getElementById("h2hHDP"), {
+        type: "pie",
+        data: {
+          labels: ["Home", "Away", "Imbang"],
+          datasets: [{
+            data: [countHDP.Home, countHDP.Away, countHDP.Imbang],
+            backgroundColor: ["#2196f3", "#e91e63", "#9e9e9e"]
+          }]
+        },
+        options: { plugins: { title: { display: true, text: "H2H Handicap" } } }
+      });
+    }
+  </script>
+</body>
+</html>
