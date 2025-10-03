@@ -2,232 +2,134 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Prediksi xG Dashboard Lengkap</title>
+  <title>Prediksi Multi Pertandingan</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background:#f4f4f4; }
-    input { width: 100px; margin: 5px; }
-    button { padding: 10px; margin-top: 10px; }
-    .hasil { margin-top: 20px; padding: 15px; border: 1px solid #aaa; background:#fff; border-radius:8px; }
-    canvas { margin-top: 20px; max-width: 600px; }
+    .match { margin:15px 0; padding:10px; border:1px solid #aaa; border-radius:6px; background:#fff; }
+    input { width: 80px; margin: 5px; }
+    button { padding: 8px 12px; margin: 10px 5px; cursor:pointer; }
+    .hasil { margin-top: 10px; padding: 10px; border: 1px solid #ccc; background:#fafafa; border-radius:6px; }
     table { border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 5px 10px; text-align: center; }
+    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
     th { background:#eee; }
   </style>
 </head>
 <body>
-  <h2>📊 Dashboard Prediksi xG</h2>
-  <p>Lengkap dengan: O/U, HDP, BTTS, Skor & 1X2</p>
+  <h2>📊 Prediksi Multi Pertandingan</h2>
+  <div id="matches"></div>
 
-  <h3>Tim A (Home)</h3>
-  xG: <input type="number" step="0.01" id="xgA">  
-  xGA: <input type="number" step="0.01" id="xgaA">
-
-  <h3>Tim B (Away)</h3>
-  xG: <input type="number" step="0.01" id="xgB">  
-  xGA: <input type="number" step="0.01" id="xgaB">
-
-  <br><br>
-  <button onclick="hitung()">Hitung Prediksi</button>
-
-  <div class="hasil" id="output"></div>
-
-  <!-- Chart Containers -->
-  <canvas id="ouChart"></canvas>
-  <canvas id="hdpChart"></canvas>
-  <canvas id="bttsChart"></canvas>
-  <canvas id="x1Chart"></canvas>
-  <canvas id="x1Pie"></canvas>
+  <button onclick="tambahMatch()">Tambah Pertandingan</button>
+  <button onclick="hitungSemua()">Hitung Semua</button>
+  <button onclick="resetSemua()">Reset Semua</button>
 
 <script>
+let matchCount = 0;
+
+function tambahMatch() {
+  matchCount++;
+  let div = document.createElement("div");
+  div.className = "match";
+  div.id = "match"+matchCount;
+  div.innerHTML = `
+    <h3>Pertandingan ${matchCount}</h3>
+    Tim A (Home) - xG: <input type="number" step="0.01" id="xgA${matchCount}">
+    xGA: <input type="number" step="0.01" id="xgaA${matchCount}"><br>
+    Tim B (Away) - xG: <input type="number" step="0.01" id="xgB${matchCount}">
+    xGA: <input type="number" step="0.01" id="xgaB${matchCount}"><br>
+    <div class="hasil" id="output${matchCount}"></div>
+  `;
+  document.getElementById("matches").appendChild(div);
+}
+
 function logistic(x) { return 1 / (1 + Math.exp(-x)); }
 function poisson(lambda, k) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
 function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
 
-let ouChart, hdpChart, bttsChart, x1Chart, x1Pie;
+function hitungSemua() {
+  for (let i=1; i<=matchCount; i++) {
+    hitungMatch(i);
+  }
+}
 
-function hitung() {
-  let xgA = parseFloat(document.getElementById("xgA").value) || 0;
-  let xgaA = parseFloat(document.getElementById("xgaA").value) || 0;
-  let xgB = parseFloat(document.getElementById("xgB").value) || 0;
-  let xgaB = parseFloat(document.getElementById("xgaB").value) || 0;
+function hitungMatch(id) {
+  let xgA = parseFloat(document.getElementById("xgA"+id).value) || 0;
+  let xgaA = parseFloat(document.getElementById("xgaA"+id).value) || 0;
+  let xgB = parseFloat(document.getElementById("xgB"+id).value) || 0;
+  let xgaB = parseFloat(document.getElementById("xgaB"+id).value) || 0;
 
-  // Estimasi gol
   let lambdaA = (xgA + xgaB) / 2;
   let lambdaB = (xgB + xgaA) / 2;
   let totalGol = (xgA + xgaA + xgB + xgaB) / 2;
 
-  // ===== Over/Under Probabilitas =====
+  // Over/Under
   let lines = [2.0, 2.25, 2.5, 2.75, 3.0];
-  let ouOver = [], ouUnder = [], ouTable = "";
+  let ouTable = "";
   let ouData = {};
-
   lines.forEach(line => {
     let diff = totalGol - line;
     let probOver = logistic(diff * 2) * 100;
     let probUnder = 100 - probOver;
     ouData[line] = {over: probOver, under: probUnder};
-    ouOver.push(probOver.toFixed(1));
-    ouUnder.push(probUnder.toFixed(1));
     ouTable += `<tr><td>${line}</td><td>${probOver.toFixed(1)}%</td><td>${probUnder.toFixed(1)}%</td></tr>`;
   });
-
-  // Rekomendasi O/U di line 2.5
   let over25 = ouData[2.5].over;
   let under25 = ouData[2.5].under;
-  let rekomendasiOU;
-  if (over25 - under25 > 10) {
-    rekomendasiOU = `Rekomendasi O/U: <b>Over 2.5</b> (${over25.toFixed(1)}% vs ${under25.toFixed(1)}%)`;
-  } else if (under25 - over25 > 10) {
-    rekomendasiOU = `Rekomendasi O/U: <b>Under 2.5</b> (${under25.toFixed(1)}% vs ${over25.toFixed(1)}%)`;
-  } else {
-    rekomendasiOU = `Rekomendasi O/U: <b>Netral</b> (imbang di sekitar 2.5)`;
-  }
+  let rekomOU = "Netral";
+  if (over25 - under25 > 10) rekomOU = "Over 2.5";
+  else if (under25 - over25 > 10) rekomOU = "Under 2.5";
 
-  // ===== HDP =====
+  // HDP
   let selisih = xgA - xgB;
   let absSelisih = Math.abs(selisih);
   let hdp;
-  if (absSelisih < 0.25) hdp = "Level Ball (0)";
-  else if (absSelisih < 0.5) hdp = (selisih > 0 ? "Tim A -0.25" : "Tim B -0.25");
-  else if (absSelisih < 0.75) hdp = (selisih > 0 ? "Tim A -0.5" : "Tim B -0.5");
-  else if (absSelisih < 1.0) hdp = (selisih > 0 ? "Tim A -0.75" : "Tim B -0.75");
-  else if (absSelisih < 1.25) hdp = (selisih > 0 ? "Tim A -1" : "Tim B -1");
-  else if (absSelisih < 1.5) hdp = (selisih > 0 ? "Tim A -1.25" : "Tim B -1.25");
-  else if (absSelisih < 1.75) hdp = (selisih > 0 ? "Tim A -1.5" : "Tim B -1.5");
-  else hdp = (selisih > 0 ? "Tim A -1.75+" : "Tim B -1.75+");
+  if (absSelisih < 0.25) hdp = "0";
+  else if (absSelisih < 0.5) hdp = (selisih > 0 ? "A -0.25" : "B -0.25");
+  else if (absSelisih < 0.75) hdp = (selisih > 0 ? "A -0.5" : "B -0.5");
+  else hdp = (selisih > 0 ? "A -0.75+" : "B -0.75+");
 
-  let probFav = logistic(absSelisih * 2) * 100;
-  let probUnderdog = 100 - probFav;
+  // BTTS
+  let probBTTS = (Math.min(1,xgA/2) * Math.min(1,xgB/2) * 100).toFixed(1);
+  let bttsLabel = probBTTS > 55 ? "Yes" : (probBTTS < 45 ? "No" : "Netral");
 
-  // ===== BTTS =====
-  let probAGol = Math.min(1, xgA / 2);
-  let probBGol = Math.min(1, xgB / 2);
-  let probBTTS = (probAGol * probBGol * 100).toFixed(1);
-  let probBTTS_No = (100 - probBTTS).toFixed(1);
-  let bttsLabel = probBTTS > 55 ? "Condong Yes" : (probBTTS < 45 ? "Condong No" : "Netral");
-
-  // ===== Poisson Skor =====
+  // Skor Poisson
   let scores = [];
   for (let i = 0; i <= 4; i++) {
     for (let j = 0; j <= 4; j++) {
-      let p = poisson(lambdaA, i) * poisson(lambdaB, j);
-      scores.push({score: `${i}-${j}`, prob: p});
+      let p = poisson(lambdaA,i)*poisson(lambdaB,j);
+      scores.push({score:`${i}-${j}`, prob:p});
     }
   }
-  scores.sort((a,b) => b.prob - a.prob);
-  let topScores = scores.slice(0,3).map(s => `${s.score} (${(s.prob*100).toFixed(1)}%)`).join("<br>");
+  scores.sort((a,b)=>b.prob-a.prob);
+  let topScores = scores.slice(0,3).map(s=>`${s.score} (${(s.prob*100).toFixed(1)}%)`).join("<br>");
 
-  // ===== 1X2 Probabilitas =====
-  let winA = 0, draw = 0, winB = 0;
-  scores.forEach(s => {
-    let [a,b] = s.score.split("-").map(Number);
-    if (a > b) winA += s.prob;
-    else if (a === b) draw += s.prob;
-    else winB += s.prob;
+  // 1X2
+  let winA=0, draw=0, winB=0;
+  scores.forEach(s=>{
+    let [a,b]=s.score.split("-").map(Number);
+    if (a>b) winA+=s.prob;
+    else if (a==b) draw+=s.prob;
+    else winB+=s.prob;
   });
-  winA *= 100; draw *= 100; winB *= 100;
-  let favLabel = Math.abs(winA - winB) < 7 ? "Tipis / Netral" : (winA > winB ? "Tim A Favorit" : "Tim B Favorit");
+  winA*=100; draw*=100; winB*=100;
 
-  // ===== OUTPUT =====
-  document.getElementById("output").innerHTML = `
-    <b>📊 Data Input</b><br>
-    Tim A → xG: ${xgA.toFixed(2)} | xGA: ${xgaA.toFixed(2)}<br>
-    Tim B → xG: ${xgB.toFixed(2)} | xGA: ${xgaB.toFixed(2)}<br><br>
-
-    <b>⚽ Estimasi Gol</b><br>
-    Tim A: ${lambdaA.toFixed(2)} | Tim B: ${lambdaB.toFixed(2)}<br>
-    Total Estimasi: ${totalGol.toFixed(2)}<br><br>
-
-    <b>📈 Over/Under Probabilitas</b>
-    <table>
-      <tr><th>Line</th><th>Over</th><th>Under</th></tr>
-      ${ouTable}
-    </table><br>
-    <b>${rekomendasiOU}</b><br><br>
-
-    <b>🏆 Prediksi Handicap (HDP)</b><br>
-    ${hdp}<br>
-    Favorit ${(selisih>0?"Tim A":"Tim B")} ~ ${probFav.toFixed(1)}% | Lawan ~ ${probUnderdog.toFixed(1)}%<br><br>
-
-    <b>🎯 Prediksi BTTS</b><br>
-    Yes: ${probBTTS}% | No: ${probBTTS_No}% → <b>${bttsLabel}</b><br><br>
-
-    <b>📌 Skor Paling Mungkin (Poisson)</b><br>
-    ${topScores}<br><br>
-
-    <b>🔮 Prediksi 1X2</b><br>
-    1 (Tim A Menang): ${winA.toFixed(1)}%<br>
-    X (Seri): ${draw.toFixed(1)}%<br>
-    2 (Tim B Menang): ${winB.toFixed(1)}%<br>
-    → <b>${favLabel}</b><br>
+  document.getElementById("output"+id).innerHTML = `
+    <b>⚽ Estimasi Gol:</b> A ${lambdaA.toFixed(2)} - B ${lambdaB.toFixed(2)}<br>
+    Total: ${totalGol.toFixed(2)}<br><br>
+    <b>📈 O/U Probabilitas</b><br>
+    <table><tr><th>Line</th><th>Over</th><th>Under</th></tr>${ouTable}</table>
+    Rekomendasi: <b>${rekomOU}</b><br><br>
+    <b>🏆 HDP:</b> ${hdp}<br>
+    <b>🎯 BTTS:</b> ${probBTTS}% → ${bttsLabel}<br><br>
+    <b>📌 Skor Poisson:</b><br>${topScores}<br><br>
+    <b>🔮 1X2:</b><br>
+    1: ${winA.toFixed(1)}% | X: ${draw.toFixed(1)}% | 2: ${winB.toFixed(1)}%<br>
   `;
+}
 
-  // ===== Chart O/U =====
-  if (ouChart) ouChart.destroy();
-  ouChart = new Chart(document.getElementById("ouChart"), {
-    type: "bar",
-    data: {
-      labels: lines.map(l => "Line " + l),
-      datasets: [
-        { label: "Over", data: ouOver, backgroundColor: "rgba(54, 162, 235, 0.7)" },
-        { label: "Under", data: ouUnder, backgroundColor: "rgba(255, 99, 132, 0.7)" }
-      ]
-    },
-    options: { responsive: true, plugins: { title: { display: true, text: "Over/Under Probabilitas" } } }
-  });
-
-  // ===== Chart HDP =====
-  if (hdpChart) hdpChart.destroy();
-  hdpChart = new Chart(document.getElementById("hdpChart"), {
-    type: "bar",
-    data: {
-      labels: [(selisih>0?"Tim A":"Tim B"), "Lawan"],
-      datasets: [
-        { label: "Probabilitas", data: [probFav.toFixed(1), probUnderdog.toFixed(1)], backgroundColor: ["rgba(75, 192, 192, 0.7)", "rgba(255, 159, 64, 0.7)"] }
-      ]
-    },
-    options: { responsive: true, plugins: { title: { display: true, text: "Handicap Confidence" } } }
-  });
-
-  // ===== Chart BTTS =====
-  if (bttsChart) bttsChart.destroy();
-  bttsChart = new Chart(document.getElementById("bttsChart"), {
-    type: "bar",
-    data: {
-      labels: ["BTTS Yes", "BTTS No"],
-      datasets: [
-        { label: "Probabilitas", data: [probBTTS, probBTTS_No], backgroundColor: ["rgba(153, 102, 255, 0.7)", "rgba(255, 206, 86, 0.7)"] }
-      ]
-    },
-    options: { responsive: true, plugins: { title: { display: true, text: "BTTS Probabilitas" } } }
-  });
-
-  // ===== Chart 1X2 (Bar) =====
-  if (x1Chart) x1Chart.destroy();
-  x1Chart = new Chart(document.getElementById("x1Chart"), {
-    type: "bar",
-    data: {
-      labels: ["1 (Home)", "X (Draw)", "2 (Away)"],
-      datasets: [
-        { label: "Probabilitas", data: [winA.toFixed(1), draw.toFixed(1), winB.toFixed(1)], backgroundColor: ["rgba(54, 162, 235, 0.7)", "rgba(201, 203, 207, 0.7)", "rgba(255, 99, 132, 0.7)"] }
-      ]
-    },
-    options: { responsive: true, plugins: { title: { display: true, text: "1X2 Probabilitas (Bar)" } } }
-  });
-
-  // ===== Chart 1X2 (Pie) =====
-  if (x1Pie) x1Pie.destroy();
-  x1Pie = new Chart(document.getElementById("x1Pie"), {
-    type: "pie",
-    data: {
-      labels: ["1 (Home)", "X (Draw)", "2 (Away)"],
-      datasets: [
-        { data: [winA.toFixed(1), draw.toFixed(1), winB.toFixed(1)], backgroundColor: ["rgba(54, 162, 235, 0.7)", "rgba(201, 203, 207, 0.7)", "rgba(255, 99, 132, 0.7)"] }
-      ]
-    },
-    options: { responsive: true, plugins: { title: { display: true, text: "1X2 Probabilitas (Pie)" } } }
-  });
+function resetSemua() {
+  document.getElementById("matches").innerHTML = "";
+  matchCount = 0;
 }
 </script>
 </body>
