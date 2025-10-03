@@ -59,13 +59,30 @@ function hitung() {
 
   // ===== Over/Under Probabilitas =====
   let lines = [2.0, 2.25, 2.5, 2.75, 3.0];
-  let ouOver = [], ouUnder = [];
+  let ouOver = [], ouUnder = [], ouTable = "";
+  let ouData = {};
+
   lines.forEach(line => {
     let diff = totalGol - line;
     let probOver = logistic(diff * 2) * 100;
+    let probUnder = 100 - probOver;
+    ouData[line] = {over: probOver, under: probUnder};
     ouOver.push(probOver.toFixed(1));
-    ouUnder.push((100 - probOver).toFixed(1));
+    ouUnder.push(probUnder.toFixed(1));
+    ouTable += `<tr><td>${line}</td><td>${probOver.toFixed(1)}%</td><td>${probUnder.toFixed(1)}%</td></tr>`;
   });
+
+  // Rekomendasi O/U di line 2.5
+  let over25 = ouData[2.5].over;
+  let under25 = ouData[2.5].under;
+  let rekomendasiOU;
+  if (over25 - under25 > 10) {
+    rekomendasiOU = `Rekomendasi O/U: <b>Over 2.5</b> (${over25.toFixed(1)}% vs ${under25.toFixed(1)}%)`;
+  } else if (under25 - over25 > 10) {
+    rekomendasiOU = `Rekomendasi O/U: <b>Under 2.5</b> (${under25.toFixed(1)}% vs ${over25.toFixed(1)}%)`;
+  } else {
+    rekomendasiOU = `Rekomendasi O/U: <b>Netral</b> (imbang di sekitar 2.5)`;
+  }
 
   // ===== HDP =====
   let selisih = xgA - xgB;
@@ -121,6 +138,13 @@ function hitung() {
     <b>⚽ Estimasi Gol</b><br>
     Tim A: ${lambdaA.toFixed(2)} | Tim B: ${lambdaB.toFixed(2)}<br>
     Total Estimasi: ${totalGol.toFixed(2)}<br><br>
+
+    <b>📈 Over/Under Probabilitas</b>
+    <table>
+      <tr><th>Line</th><th>Over</th><th>Under</th></tr>
+      ${ouTable}
+    </table><br>
+    <b>${rekomendasiOU}</b><br><br>
 
     <b>🏆 Prediksi Handicap (HDP)</b><br>
     ${hdp}<br>
