@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prediksi Over/Under & Handicap + Grafik</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+    h2 { color: #333; }
+    input, select, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 500px; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .box { display: inline-block; vertical-align: top; width: 45%; padding: 10px; margin: 10px; background: #fff; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .hasil { margin-top: 20px; padding: 15px; background: #e9ffe9; border: 1px solid #b2ffb2; border-radius: 8px; }
+    canvas { margin-top: 20px; max-width: 700px; }
+  </style>
+</head>
+<body>
+
+  <h2>Prediksi Over/Under & Handicap + Grafik</h2>
+  <label>URL Tim 1:</label><br>
+  <input type="text" id="url1" value="https://understat.com/team/Arsenal/2025/2026"><br>
+  <label>URL Tim 2:</label><br>
+  <input type="text" id="url2" value="https://understat.com/team/Chelsea/2025/2026"><br>
+  <label>Pilih Jumlah Match (terakhir):</label><br>
+  <select id="jumlah">
+    <option value="5">5</option>
+    <option value="10" selected>10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+  </select><br><br>
+  <button onclick="bandingkanTim()">Bandingkan</button>
+
+  <div class="box" id="tim1">Tim 1: Loading...</div>
+  <div class="box" id="tim2">Tim 2: Loading...</div>
+
+  <div class="hasil" id="hasil">Hasil prediksi akan muncul di sini...</div>
+
+  <canvas id="chart"></canvas>
+
+<script>
+async function ambilDataUnderstat(url) {
+  try {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    const data = await res.json();
+    const html = data.contents;
+
+    const regex = /JSON.parse\('([^']+)'\)/;
+    const match = html.match(regex);
+
+    if (!match) throw new Error("Gagal parsing data dari understat");
+
+    const jsonString = match[1].replace(/\\"/g, '"');
+    const jsonData = JSON.parse(jsonString);
+
+    return jsonData;
+  } catch (err) {
+    console.error("Error fetch understat:", err);
+    return null;
+  }
+}
+
+function hitungRata2XG(data, jumlah) {
+  const lastMatches = data.history.slice(-jumlah);
+  const avgXG = lastMatches.reduce((a, b) => a + parseFloat(b.xG), 0) / lastMatches.length;
+  const avgGA = lastMatches.reduce((a, b) => a + parseFloat(b.xGA), 0) / lastMatches.length;
+  return { avgXG, avgGA };
+}
+
+function hitungConfidenceOU(totalGol) {
+  let confidence;
+  if (totalGol < 2.5) {
+    confidence = Math.min(95, Math.round((2.5 - totalGol) * 40 + 50));
+    return `Under 2.5 (Confidence: ${confidence}%)`;
+  } else if (totalGol < 3.5) {
+    confidence = Math.round(60 + (Math.abs(totalGol - 3.0) * 20));
+    return `Over 2.5 tapi Under 3.5 (Confidence: ${confidence}%)`;
+  } else {
+    confidence = Math.min(95, Math.round((totalGol - 3.5) * 30 + 60));
+    return `Over 3.5 (Confidence: ${confidence}%)`;
+  }
+}
+
+function hitungConfidenceHDP(prediksi1, prediksi2, tim1, tim2) {
+  const selisih = Math.abs(prediksi1 - prediksi2);
+  let confidence = Math.min(95, Math.round(selisih * 40 + 50));
+
+  if (selisih < 0.25) {
+    return `Pick/Draw Handicap (Confidence: 50%)`;
+  } else if (prediksi1 > prediksi2) {
+    return `${tim1} -0.25 / -0.5 (Confidence: ${confidence}%)`;
+  } else {
+    return `${tim2} -0.25 / -0.5 (Confidence: ${confidence}%)`;
+  }
+}
+
+let chart; // simpan chart supaya bisa update
+
+async function bandingkanTim() {
+  const urlTim1 = document.getElementById("url1").value;
+  const urlTim2 = document.getElementById("url2").value;
+  const jumlah = parseInt(document.getElementById("jumlah").value);
+
+  document.getElementById("tim1").innerHTML = "Loading...";
+  document.getElementById("tim2").innerHTML = "Loading...";
+  document.getElementById("hasil").innerHTML = "Proses analisis...";
+
+  const tim1 = await ambilDataUnderstat(urlTim1);
+  const tim2 = await ambilDataUnderstat(urlTim2);
+
+  if (!tim1 || !tim2) {
+    document.getElementById("hasil").innerHTML = "❌ Gagal ambil data tim!";
+    return;
+  }
+
+  const data1 = hitungRata2XG(tim1, jumlah);
+  const data2 = hitungRata2XG(tim2, jumlah);
+
+  document.getElementById("tim1").innerHTML = `
+    <b>${tim1.title}</b><br>
+    Avg xG (For): ${data1.avgXG.toFixed(2)}<br>
+    Avg xGA (Against): ${data1.avgGA.toFixed(2)}
+  `;
+  document.getElementById("tim2").innerHTML = `
+    <b>${tim2.title}</b><br>
+    Avg xG (For): ${data2.avgXG.toFixed(2)}<br>
+    Avg xGA (Against): ${data2.avgGA.toFixed(2)}
+  `;
+
+  // Prediksi skor
+  const prediksiTim1 = (data1.avgXG + data2.avgGA) / 2;
+  const prediksiTim2 = (data2.avgXG + data1.avgGA) / 2;
+  const totalGol = prediksiTim1 + prediksiTim2;
+
+  const ou = hitungConfidenceOU(totalGol);
+  const hdp = hitungConfidenceHDP(prediksiTim1, prediksiTim2, tim1.title, tim2.title);
+
+  document.getElementById("hasil").innerHTML = `
+    <h3>📊 Hasil Prediksi</h3>
+    Prediksi Skor: <b>${tim1.title} ${prediksiTim1.toFixed(0)} - ${prediksiTim2.toFixed(0)} ${tim2.title}</b><br><br>
+    Rekomendasi Over/Under: <b>${ou}</b><br>
+    Rekomendasi Handicap: <b>${hdp}</b><br>
+    (Total Gol Expected: ${totalGol.toFixed(2)})
+  `;
+
+  // Buat grafik bar
+  const ctx = document.getElementById("chart").getContext("2d");
+  if (chart) chart.destroy(); // reset chart biar nggak numpuk
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [tim1.title, tim2.title],
+      datasets: [
+        {
+          label: 'Avg xG (For)',
+          data: [data1.avgXG, data2.avgXG],
+          backgroundColor: 'rgba(75, 192, 192, 0.6)'
+        },
+        {
+          label: 'Avg xGA (Against)',
+          data: [data1.avgGA, data2.avgGA],
+          backgroundColor: 'rgba(255, 99, 132, 0.6)'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: true, text: 'Perbandingan Rata-rata xG & xGA' }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
