@@ -1,347 +1,142 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisis Lengkap HDP & Over/Under</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2, h3 { color: #333; }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
-        button:hover { background: #45a049; }
-        #result { margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 4px; display: none; }
-        .section { border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 4px; }
-        .sub-input { display: inline-block; width: 45%; margin-right: 5%; }
-        .recommendation { background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0; }
-        .value-bet { color: #28a745; font-weight: bold; }
-        .balanced { color: #007bff; font-weight: bold; }
-        .caution { color: #dc3545; font-style: italic; }
-        .risk-low { background: #d4edda; color: #155724; }
-        .risk-medium { background: #fff3cd; color: #856404; }
-        .risk-high { background: #f8d7da; color: #721c24; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .btts-section, .form-section, .xg-section { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Prediksi Over/Under Ultra Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    h2 { color: #222; }
+    .card { background: #fff; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-top: 15px; padding: 10px; border: none; border-radius: 8px; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .result { margin-top: 20px; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+    .over { background: #d4edda; color: #155724; }
+    .under { background: #f8d7da; color: #721c24; }
+    .bar { height: 20px; border-radius: 10px; overflow: hidden; margin-top: 10px; background: #eee; }
+    .bar-fill { height: 100%; text-align: center; font-size: 12px; font-weight: bold; color: #fff; line-height: 20px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Analisis Lengkap HDP & Over/Under - Dengan Fitur Tambahan (BTTS, Clean Sheet, Form, xG)</h2>
-        <p>Analisis seimbang dengan fitur baru: BTTS, Clean Sheet, Goal Timing, Form Terkini, xG, Risk Assessment, dan Comparison Table.</p>
+  <h2>Prediksi Over/Under Ultra Pro (xG + Poisson + Odds)</h2>
+  <div class="card">
+    <label>xG Attack Home</label>
+    <input type="number" id="xgHome" step="0.1" placeholder="misal 1.8">
 
-        <!-- Input Performa Dasar -->
-        <div class="section">
-            <h3>Performa Home/Away (Rata-rata 5-10 Match)</h3>
-            <div class="sub-input">
-                <label>Tim A Home - Gol Dicetak:</label>
-                <input type="number" id="teamA_home_scored" step="0.1" value="1.8">
-            </div>
-            <div class="sub-input">
-                <label>Tim A Home - Gol Kebobolan:</label>
-                <input type="number" id="teamA_home_conceded" step="0.1" value="0.9">
-            </div>
-            <div class="sub-input">
-                <label>Tim B Away - Gol Dicetak:</label>
-                <input type="number" id="teamB_away_scored" step="0.1" value="1.1">
-            </div>
-            <div class="sub-input">
-                <label>Tim B Away - Gol Kebobolan:</label>
-                <input type="number" id="teamB_away_conceded" step="0.1" value="1.4">
-            </div>
-        </div>
+    <label>xG Attack Away</label>
+    <input type="number" id="xgAway" step="0.1" placeholder="misal 1.4">
 
-        <!-- Input H2H -->
-        <div class="section">
-            <h3>H2H (3 Pertemuan Terakhir: Skor Tim A vs Tim B)</h3>
-            <label>Pertemuan 1:</label><input type="text" id="h2h1" value="1-0">
-            <label>Pertemuan 2:</label><input type="text" id="h2h2" value="2-1">
-            <label>Pertemuan 3:</label><input type="text" id="h2h3" value="0-0">
-        </div>
+    <label>xG Concede Home</label>
+    <input type="number" id="xgHomeConcede" step="0.1" placeholder="misal 1.2">
 
-        <!-- Input Form Terkini -->
-        <div class="section form-section">
-            <h3>Form Terkini (3 Match Terakhir - W/D/L untuk masing-masing tim)</h3>
-            <label>Tim A Form (e.g., WDW):</label><input type="text" id="formA" placeholder="e.g., WDW" value="WDW">
-            <label>Tim B Form (e.g., LLW):</label><input type="text" id="formB" placeholder="e.g., LLW" value="LLW">
-            <p><em>W=Win, D=Draw, L=Loss. Digunakan untuk adjust momentum.</em></p>
-        </div>
+    <label>xG Concede Away</label>
+    <input type="number" id="xgAwayConcede" step="0.1" placeholder="misal 1.6">
 
-        <!-- Input Goal Timing -->
-        <div class="section">
-            <h3>Goal Timing (% Gol di Babak 1 vs Babak 2)</h3>
-            <div class="sub-input">
-                <label>Tim A - % Gol Babak 1:</label>
-                <input type="number" id="timingA_first" step="5" value="45" min="0" max="100">
-            </div>
-            <div class="sub-input">
-                <label>Tim B - % Gol Babak 1:</label>
-                <input type="number" id="timingB_first" step="5" value="40" min="0" max="100">
-            </div>
-        </div>
+    <label>Odds Over</label>
+    <input type="number" id="oddsOver" step="0.01" placeholder="1.85">
 
-        <!-- Input xG (Opsional) -->
-        <div class="section xg-section">
-            <h3>Expected Goals (xG) - Opsional (dari Understat)</h3>
-            <div class="sub-input">
-                <label>Tim A xG Home (per match):</label>
-                <input type="number" id="xgA" step="0.1" value="1.6">
-            </div>
-            <div class="sub-input">
-                <label>Tim B xG Away (per match):</label>
-                <input type="number" id="xgB" step="0.1" value="1.2">
-            </div>
-            <p><em>Jika tidak ada data xG, biarkan default atau kosongkan.</em></p>
-        </div>
+    <label>Odds Under</label>
+    <input type="number" id="oddsUnder" step="0.01" placeholder="1.95">
 
-        <!-- Input Odds & Faktor -->
-        <div class="section">
-            <h3>Odds & Faktor Eksternal</h3>
-            <div class="sub-input">
-                <label>Odds Over (e.g., 2.5):</label>
-                <input type="number" id="odds_over" step="0.01" value="1.90">
-            </div>
-            <div class="sub-input">
-                <label>Odds Under (e.g., 2.5):</label>
-                <input type="number" id="odds_under" step="0.01" value="1.90">
-            </div>
-            <label>Threshold (default 2.5):</label>
-            <input type="number" id="threshold" step="0.5" value="2.5">
-            <label>Kondisi:</label>
-            <select id="condition">
-                <option value="normal">Normal</option>
-                <option value="hujan">Hujan (-0.2 gol)</option>
-                <option value="ofensif">Liga Ofensif (+0.2)</option>
-                <option value="defensif">Liga Defensif (-0.3)</option>
-            </select>
-        </div>
+    <label>Line Over/Under</label>
+    <input type="number" id="line" step="0.5" placeholder="2.5">
 
-        <button onclick="hitungAnalisisLengkap()">Hitung Analisis Lengkap</button>
-        <button onclick="saveAnalysis()">💾 Simpan Analisis</button>
-        <button onclick="loadAnalysis()">📂 Load Analisis</button>
-        <button onclick="downloadResults()">📥 Download Hasil</button>
+    <button onclick="prediksiOU()">Prediksi</button>
+  </div>
 
-        <div id="result"></div>
-    </div>
+  <div id="hasil" class="result"></div>
+  <div class="bar"><div id="barFill" class="bar-fill"></div></div>
+  <canvas id="chartGol" width="400" height="200"></canvas>
+  <div id="skorTerdekat"></div>
 
-    <script>
-        function hitungAnalisisLengkap() {
-            // Input performa dasar
-            const teamA_home_scored = parseFloat(document.getElementById('teamA_home_scored').value) || 1.5;
-            const teamA_home_conceded = parseFloat(document.getElementById('teamA_home_conceded').value) || 1.0;
-            const teamB_away_scored = parseFloat(document.getElementById('teamB_away_scored').value) || 1.2;
-            const teamB_away_conceded = parseFloat(document.getElementById('teamB_away_conceded').value) || 1.3;
+  <script>
+    function factorial(n){ return n===0?1:Array.from({length:n},(_,i)=>i+1).reduce((a,b)=>a*b,1); }
+    function poisson(lambda,k){ return (Math.pow(lambda,k)*Math.exp(-lambda))/factorial(k); }
 
-            // xG adjustment (jika tersedia)
-            const xgA = parseFloat(document.getElementById('xgA').value) || teamA_home_scored;
-            const xgB = parseFloat(document.getElementById('xgB').value) || teamB_away_scored;
-            const xgWeight = document.getElementById('xgA').value ? 0.3 : 0; // 30% bobot jika xG ada
+    function prediksiOU(){
+      let xgHome=parseFloat(document.getElementById("xgHome").value)||0;
+      let xgAway=parseFloat(document.getElementById("xgAway").value)||0;
+      let xgHomeConcede=parseFloat(document.getElementById("xgHomeConcede").value)||0;
+      let xgAwayConcede=parseFloat(document.getElementById("xgAwayConcede").value)||0;
+      let oddsOver=parseFloat(document.getElementById("oddsOver").value)||2.0;
+      let oddsUnder=parseFloat(document.getElementById("oddsUnder").value)||2.0;
+      let line=parseFloat(document.getElementById("line").value)||2.5;
 
-            // Prediksi gol dengan xG
-            const baseGoalsA = (0.7 * xgA + 0.3 * teamB_away_conceded) + 0.2; // Home advantage
-            const baseGoalsB = (0.7 * xgB + 0.3 * teamA_home_conceded);
-            const predictedGoalsA = (1 - xgWeight) * baseGoalsA + xgWeight * xgA;
-            const predictedGoalsB = (1 - xgWeight) * baseGoalsB + xgWeight * xgB;
+      // expected goals tiap tim
+      let expHome=(xgHome+xgAwayConcede)/2;
+      let expAway=(xgAway+xgHomeConcede)/2;
 
-            // H2H parsing
-            const h2hMatches = [document.getElementById('h2h1').value, document.getElementById('h2h2').value, document.getElementById('h2h3').value];
-            let totalH2HGolA = 0, totalH2HGolB = 0, overCount = 0, bttsCount = 0, cleanSheetA = 0, cleanSheetB = 0;
-            const threshold = parseFloat(document.getElementById('threshold').value);
-            h2hMatches.forEach(match => {
-                const scores = match.split('-').map(s => parseInt(s.trim()));
-                if (scores.length === 2) {
-                    totalH2HGolA += scores[0];
-                    totalH2HGolB += scores[1];
-                    const total = scores[0] + scores[1];
-                    if (total > threshold) overCount++;
-                    if (scores[0] > 0 && scores[1] > 0) bttsCount++;
-                    if (scores[1] === 0) cleanSheetA++; // Tim A clean sheet
-                    if (scores[0] === 0) cleanSheetB++;
-                }
-            });
-            const numMatches = h2hMatches.filter(m => m).length;
-            const avgH2HGolA = totalH2HGolA / Math.max(numMatches, 1);
-            const avgH2HGolB = totalH2HGolB / Math.max(numMatches, 1);
-            const h2hOverPct = (overCount / numMatches) * 100;
-            const h2hBTTS = (bttsCount / numMatches) * 100;
-            const h2hCleanA = (cleanSheetA / numMatches) * 100;
-            const h2hCleanB = (cleanSheetB / numMatches) * 100;
-
-            // Form terkini adjustment
-            const formA = document.getElementById('formA').value.toUpperCase();
-            const formB = document.getElementById('formB').value.toUpperCase();
-            const formPointsA = (formA.match(/W/g) || []).length * 3 + (formA.match(/D/g) || []).length; // Points from form
-            const formPointsB = (formB.match(/W/g) || []).length * 3 + (formB.match(/D/g) || []).length;
-            const formAdjustA = formPointsA / 9 * 0.2; // Max +0.2 if perfect form
-            const formAdjustB = formPointsB / 9 * 0.2;
-
-            // Goal timing untuk pola
-            const timingA_first = parseFloat(document.getElementById('timingA_first').value) / 100;
-            const timingB_first = parseFloat(document.getElementById('timingB_first').value) / 100;
-            const earlyGoalsPct = ((timingA_first * predictedGoalsA) + (timingB_first * predictedGoalsB)) / (predictedGoalsA + predictedGoalsB);
-
-            // Faktor eksternal
-            const condition = document.getElementById('condition').value;
-            let externalAdjust = 0;
-            if (condition === 'hujan') externalAdjust = -0.2;
-            else if (condition === 'ofensif') externalAdjust = 0.2;
-            else if (condition === 'defensif') externalAdjust = -0.3;
-
-            // Odds
-            const odds_over = parseFloat(document.getElementById('odds_over').value) || 1.90;
-            const odds_under = parseFloat(document.getElementById('odds_under').value) || 1.90;
-            const oddsAdjust = ((1/odds_over) - (1/odds_under)) * 0.3;
-
-            // Final predictions dengan bobot lengkap
-            const weights = { performa: 0.35, h2h: 0.25, form: 0.15, xg: xgWeight, odds: 0.15, external: 0.1 };
-            const finalGoalsA = (weights.performa * predictedGoalsA) + (weights.h2h * avgH2HGolA) + (weights.form * formAdjustA) + 
-                                (weights.external * externalAdjust) + (weights.odds * oddsAdjust);
-            const finalGoalsB = (weights.performa * predictedGoalsB) + (weights.h2h * avgH2HGolB) + (weights.form * formAdjustB) + 
-                                (weights.external * externalAdjust) + (weights.odds * -oddsAdjust);
-
-            const totalGoals = finalGoalsA + finalGoalsB;
-            const hdpDiff = finalGoalsA - finalGoalsB;
-
-            // BTTS Calculation
-            const bttsProb = ((predictedGoalsA > 0 ? 1 : 0) * (predictedGoalsB > 0 ? 1 : 0)) * 100 * 
-                            (0.6 + (h2hBTTS / 100 * 0.4)); // 60% dari prediksi, 40% H2H
-            const bttsRekomendasi = bttsProb > 60 ? 'Ya (BTTS - Value jika odds >1.8)' : 
-                                   bttsProb < 40 ? 'Tidak (Clean Sheet potensial)' : '50/50';
-
-            // Clean Sheet
-            const cleanSheetA_prob = (teamA_home_conceded < 1 ? 70 : 40) + (h2hCleanA * 0.6) - (teamB_away_scored * 10);
-            const cleanSheetB_prob = (teamB_away_conceded < 1 ? 70 : 40) + (h2hCleanB * 0.6) - (teamA_home_scored * 10);
-            const cleanSheetRekomendasi = cleanSheetA_prob > 60 ? 'Tim A Clean Sheet' : 
-                                        cleanSheetB_prob > 60 ? 'Tim B Clean Sheet' : 'Kedua tim kemungkinan cetak gol';
-
-            // Risk Assessment (variance dari data)
-            const dataVariance = Math.abs((teamA_home_scored - avgH2HGolA) + (teamB_away_scored - avgH2HGolB));
-            const riskLevel = dataVariance > 1.5 ? 'High' : dataVariance > 0.8 ? 'Medium' : 'Low';
-            const riskClass = `risk-${riskLevel.toLowerCase().replace(' ', '-')}`;
-
-            // Over/Under Seimbang dengan BTTS
-            let ouRekomendasi = '', ouBestBet = '';
-            const diffFromThreshold = totalGoals - threshold;
-            if (diffFromThreshold > 0.5 && h2hOverPct > 50 && odds_over > 1.9 && bttsProb > 50) {
-                ouRekomendasi = `**Over ${threshold} + BTTS** (Total: ${totalGoals.toFixed(1)}, H2H Over: ${h2hOverPct.toFixed(0)}%)`;
-                ouBestBet = '<span class="value-bet">Best Bet: Over + BTTS combo</span>';
-            } else if (diffFromThreshold < -0.5 && h2hOverPct < 50 && odds_under > 1.9 && bttsProb < 50) {
-                ouRekomendasi = `**Under ${threshold} + No BTTS** (Total: ${totalGoals.toFixed(1)}, H2H Under: ${100-h2hOverPct.toFixed(0)}%)`;
-                ouBestBet = '<span class="value-bet">Best Bet: Under + Clean Sheet</span>';
-            } else if (Math.abs(diffFromThreshold) <= 0.3) {
-                ouRekomendasi = `**Seimbang ${threshold}** (Total: ${totalGoals.toFixed(1)}, BTTS: ${bttsProb.toFixed(0)}%)`;
-                ouBestBet = '<span class="balanced">Alternatif: BTTS Yes/No atau Goal Range 1-2</span>';
-            } else {
-                ouRekomendasi = `**Netral** (Total: ${totalGoals.toFixed(1)})`;
-                ouBestBet = '<span class="caution">Hindari: Data variance tinggi</span>';
-            }
-
-            // HDP
-            let hdpRekomendasi = hdpDiff > 0.75 ? `Tim A -${Math.round(hdpDiff * 2) / 2} (Form A kuat)` : 
-                                hdpDiff < -0.75 ? `Tim B +${Math.round(Math.abs(hdpDiff) * 2) / 2} (Underdog value)` : 
-                                'HDP Seimbang - Pertimbangkan Draw No Bet';
-
-            // Goal Timing Insight
-            const timingInsight = earlyGoalsPct > 0.6 ? 'Early Goals (Babak 1 aktif)' : 
-                                 earlyGoalsPct < 0.4 ? 'Late Goals (Babak 2 menentukan)' : 'Even Timing';
-
-            // Comparison Table Data
-            const tableData = {
-                'Metrik': ['Performa A', 'Performa B', 'H2H A', 'H2H B', 'Form Points A', 'Form Points B', 'xG A', 'xG B'],
-                'Nilai': [`${teamA_home_scored.toFixed(1)}`, `${teamB_away_scored.toFixed(1)}`, `${avgH2HGolA.toFixed(1)}`, 
-                         `${avgH2HGolB.toFixed(1)}`, formPointsA, formPointsB, `${xgA.toFixed(1)}`, `${xgB.toFixed(1)}`]
-            };
-
-            // Hasil
-            document.getElementById('result').innerHTML = `
-                <h3>Hasil Analisis Lengkap</h3>
-                <p><strong>Prediksi Gol Tim A:</strong> ${finalGoalsA.toFixed(1)} | <strong>Tim B:</strong> ${finalGoalsB.toFixed(1)}</p>
-                <p><strong>Total Gol:</strong> ${totalGoals.toFixed(1)} | <strong>HDP Diff:</strong> ${hdpDiff.toFixed(2)}</p>
-                <p><strong>Goal Timing:</strong> ${timingInsight} (${(earlyGoalsPct*100).toFixed(0)}% Babak 1)</p>
-                
-                <div class="recommendation">
-                    <p><strong>Over/Under + BTTS:</strong> ${ouRekomendasi}</p>
-                    <p>${ouBestBet}</p>
-                    <p><strong>BTTS Probability:</strong> ${bttsProb.toFixed(0)}% - ${bttsRekomendasi}</p>
-                    <p><strong>Clean Sheet:</strong> ${cleanSheetRekomendasi} (A: ${cleanSheetA_prob.toFixed(0)}%, B: ${cleanSheetB_prob.toFixed(0)}%)</p>
-                </div>
-                
-                <div class="recommendation">
-                    <p><strong>HDP Rekomendasi:</strong> ${hdpRekomendasi}</p>
-                </div>
-                
-                <div class="${riskClass} recommendation">
-                    <p><strong>Risk Assessment:</strong> ${riskLevel} Risk - ${dataVariance.toFixed(2)} variance dari data historis</p>
-                    <p><em>${riskLevel === 'Low' ? 'Data konsisten, prediksi reliable' : riskLevel === 'Medium' ? 'Beberapa ketidakpastian, cross-check' : 'Data sangat bervariasi, hindari taruhan besar'}</em></p>
-                </div>
-                
-                <h4>Comparison Table</h4>
-                <table>
-                    <tr><th>${tableData.Metrik[0]}</th><th>${tableData.Nilai[0]}</th><th>${tableData.Metrik[1]}</th><th>${tableData.Nilai[1]}</th></tr>
-                    <tr><th>${tableData.Metrik[2]}</th><th>${tableData.Nilai[2]}</th><th>${tableData.Metrik[3]}</th><th>${tableData.Nilai[3]}</th></tr>
-                    <tr><th>${tableData.Metrik[4]}</th><th>${tableData.Nilai[4]}</th><th>${tableData.Metrik[5]}</th><th>${tableData.Nilai[5]}</th></tr>
-                    <tr><th>${tableData.Metrik[6]}</th><th>${tableData.Nilai[6]}</th><th>${tableData.Metrik[7]}</th><th>${tableData.Nilai[7]}</th></tr>
-                </table>
-                
-                <p><em>Model lengkap dengan xG, form, dan risk assessment. Akurasi ~75-85% dengan data lengkap. Sumber: SoccerSTATS, Understat. Taruhan bertanggung jawab!</em></p>
-            `;
-            document.getElementById('result').style.display = 'block';
+      // distribusi skor sampai 5-5
+      let skorProb={};
+      for(let h=0;h<=5;h++){
+        for(let a=0;a<=5;a++){
+          let p=poisson(expHome,h)*poisson(expAway,a);
+          skorProb[`${h}-${a}`]=p;
         }
+      }
 
-        // Save/Load Functions
-        function saveAnalysis() {
-            const analysisData = {
-                inputs: {
-                    teamA_home_scored: document.getElementById('teamA_home_scored').value,
-                    teamA_home_conceded: document.getElementById('teamA_home_conceded').value,
-                    teamB_away_scored: document.getElementById('teamB_away_scored').value,
-                    teamB_away_conceded: document.getElementById('teamB_away_conceded').value,
-                    h2h1: document.getElementById('h2h1').value,
-                    h2h2: document.getElementById('h2h2').value,
-                    h2h3: document.getElementById('h2h3').value,
-                    formA: document.getElementById('formA').value,
-                    formB: document.getElementById('formB').value,
-                    xgA: document.getElementById('xgA').value,
-                    xgB: document.getElementById('xgB').value,
-                    odds_over: document.getElementById('odds_over').value,
-                    odds_under: document.getElementById('odds_under').value,
-                    threshold: document.getElementById('threshold').value,
-                    condition: document.getElementById('condition').value
-                },
-                timestamp: new Date().toISOString()
-            };
-            localStorage.setItem('footballAnalysis', JSON.stringify(analysisData));
-            alert('Analisis disimpan! 🎉');
-        }
+      // total gol distribusi
+      let distribusi=Array(8).fill(0); // 0-6,7+
+      Object.entries(skorProb).forEach(([skor,p])=>{
+        let [h,a]=skor.split("-").map(Number);
+        let total=h+a;
+        if(total<=6) distribusi[total]+=p;
+        else distribusi[7]+=p;
+      });
 
-        function loadAnalysis() {
-            const saved = localStorage.getItem('footballAnalysis');
-            if (saved) {
-                const data = JSON.parse(saved);
-                Object.keys(data.inputs).forEach(key => {
-                    const element = document.getElementById(key);
-                    if (element) element.value = data.inputs[key];
-                });
-                alert('Analisis dimuat! Jalankan hitung ulang. 📂');
-            } else {
-                alert('Tidak ada data tersimpan.');
-            }
-        }
+      // hitung prob Over/Under line
+      let probOver=distribusi.slice(Math.ceil(line+0.01)).reduce((a,b)=>a+b,0);
+      let probUnder=1-probOver;
 
-        function downloadResults() {
-            const result = document.getElementById('result').innerText || 'Jalankan analisis terlebih dahulu!';
-            const blob = new Blob([result], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `analisis-sepakbola-${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
+      // implied prob dari odds
+      let probMarketOver=(1/oddsOver)/((1/oddsOver)+(1/oddsUnder));
+
+      // gabungan model + pasar
+      let finalOver=(probOver*0.6+probMarketOver*0.4);
+      let finalUnder=1-finalOver;
+
+      let hasilDiv=document.getElementById("hasil");
+      let barFill=document.getElementById("barFill");
+
+      if(finalOver>finalUnder){
+        hasilDiv.innerHTML=`Prediksi: OVER 🔥 (${(finalOver*100).toFixed(1)}% confidence) | ExpG: ${(expHome+expAway).toFixed(2)}`;
+        hasilDiv.className="result over";
+        barFill.style.width=(finalOver*100).toFixed(1)+"%";
+        barFill.style.background="#28a745";
+        barFill.innerHTML=(finalOver*100).toFixed(1)+"% OVER";
+      }else{
+        hasilDiv.innerHTML=`Prediksi: UNDER ❄️ (${(finalUnder*100).toFixed(1)}% confidence) | ExpG: ${(expHome+expAway).toFixed(2)}`;
+        hasilDiv.className="result under";
+        barFill.style.width=(finalUnder*100).toFixed(1)+"%";
+        barFill.style.background="#dc3545";
+        barFill.innerHTML=(finalUnder*100).toFixed(1)+"% UNDER";
+      }
+
+      // Skor paling mungkin
+      let skorTerbaik=Object.entries(skorProb).sort((a,b)=>b[1]-a[1])[0];
+      document.getElementById("skorTerdekat").innerHTML=`Skor paling mungkin: ${skorTerbaik[0]} (Prob: ${(skorTerbaik[1]*100).toFixed(1)}%)`;
+
+      // Chart distribusi total gol
+      let ctx=document.getElementById("chartGol").getContext("2d");
+      new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels:["0","1","2","3","4","5","6","7+"],
+          datasets:[{
+            label:"Probabilitas Total Gol",
+            data:distribusi.map(x=>(x*100).toFixed(2)),
+            backgroundColor:"#007bff"
+          }]
+        },
+        options:{
+          responsive:true,
+          plugins:{ legend:{ display:false }},
+          scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+"%" }}}
         }
-    </script>
+      });
+    }
+  </script>
 </body>
 </html>
-
