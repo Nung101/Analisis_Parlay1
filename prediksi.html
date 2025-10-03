@@ -2,12 +2,12 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Prediksi Multi Pertandingan</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Prediksi Multi Pertandingan (Poisson + MC O/U)</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background:#f4f4f4; }
     .match { margin:15px 0; padding:10px; border:1px solid #aaa; border-radius:6px; background:#fff; }
-    input { width: 80px; margin: 5px; }
+    input, select { margin: 5px; }
+    input { width: 80px; }
     button { padding: 8px 12px; margin: 10px 5px; cursor:pointer; }
     .hasil { margin-top: 10px; padding: 10px; border: 1px solid #ccc; background:#fafafa; border-radius:6px; }
     table { border-collapse: collapse; margin-top: 10px; }
@@ -16,7 +16,7 @@
   </style>
 </head>
 <body>
-  <h2>📊 Prediksi Multi Pertandingan</h2>
+  <h2>📊 Prediksi Multi Pertandingan (Poisson + MC O/U)</h2>
   <div id="matches"></div>
 
   <button onclick="tambahMatch()">Tambah Pertandingan</button>
@@ -26,110 +26,185 @@
 <script>
 let matchCount = 0;
 
-function tambahMatch() {
-  matchCount++;
-  let div = document.createElement("div");
-  div.className = "match";
-  div.id = "match"+matchCount;
-  div.innerHTML = `
-    <h3>Pertandingan ${matchCount}</h3>
-    Tim A (Home) - xG: <input type="number" step="0.01" id="xgA${matchCount}">
-    xGA: <input type="number" step="0.01" id="xgaA${matchCount}"><br>
-    Tim B (Away) - xG: <input type="number" step="0.01" id="xgB${matchCount}">
-    xGA: <input type="number" step="0.01" id="xgaB${matchCount}"><br>
-    <div class="hasil" id="output${matchCount}"></div>
-  `;
-  document.getElementById("matches").appendChild(div);
-}
-
-function logistic(x) { return 1 / (1 + Math.exp(-x)); }
+// Fungsi dasar
 function poisson(lambda, k) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
 function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
 
-function hitungSemua() {
-  for (let i=1; i<=matchCount; i++) {
-    hitungMatch(i);
-  }
+// Random normal generator (Box-Muller)
+function randNormal(mu=0, sigma=1) {
+  let u=0, v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  let z = Math.sqrt(-2.0*Math.log(u)) * Math.cos(2.0*Math.PI*v);
+  return mu + z*sigma;
 }
 
-function hitungMatch(id) {
-  let xgA = parseFloat(document.getElementById("xgA"+id).value) || 0;
-  let xgaA = parseFloat(document.getElementById("xgaA"+id).value) || 0;
-  let xgB = parseFloat(document.getElementById("xgB"+id).value) || 0;
-  let xgaB = parseFloat(document.getElementById("xgaB"+id).value) || 0;
+// Monte-Carlo calibrated O/U
+function probOverUnderMC(lambdaA, lambdaB, line, MC_SIMS=600, SIGMA=0.12) {
+  let sumOver=0, sumUnder=0;
+  for (let s=0; s<MC_SIMS; s++) {
+    let noiseA = 1 + randNormal(0, SIGMA);
+    let noiseB = 1 + randNormal(0, SIGMA);
+    let lamA = Math.max(0.05, lambdaA*noiseA);
+    let lamB = Math.max(0.05, lambdaB*noiseB);
+    let po=0, pu=0;
+    for (let i=0; i<=6; i++) {
+      for (let j=0; j<=6; j++) {
+        let p = poisson(lamA,i)*poisson(lamB,j);
+        if (i+j >= line) po+=p;
+        else pu+=p;
+      }
+    }
+    sumOver+=po; sumUnder+=pu;
+  }
+  let avgOver=(sumOver/MC_SIMS)*100;
+  let avgUnder=(sumUnder/MC_SIMS)*100;
+  let total=avgOver+avgUnder;
+  if(total>0){
+    avgOver=(avgOver/total)*100;
+    avgUnder=100-avgOver;
+  } else { avgOver=avgUnder=50; }
+  return {over:avgOver, under:avgUnder};
+}
 
-  let lambdaA = (xgA + xgaB) / 2;
-  let lambdaB = (xgB + xgaA) / 2;
-  let totalGol = (xgA + xgaA + xgB + xgaB) / 2;
+// Tambah pertandingan
+function tambahMatch() {
+  matchCount++;
+  let div=document.createElement("div");
+  div.className="match";
+  div.id="match"+matchCount;
+  div.innerHTML=`
+    <h3>Pertandingan ${matchCount}</h3>
+    <label>Mode Data:</label>
+    <select id="mode${matchCount}" onchange="buatInput(${matchCount})">
+      <option value="all">All Matches</option>
+      <option value="ha">Home/Away</option>
+    </select>
+    <div id="inputArea${matchCount}"></div>
+    <div class="hasil" id="output${matchCount}"></div>
+  `;
+  document.getElementById("matches").appendChild(div);
+  buatInput(matchCount);
+}
 
-  // Over/Under
-  let lines = [2.0, 2.25, 2.5, 2.75, 3.0];
-  let ouTable = "";
-  let ouData = {};
-  lines.forEach(line => {
-    let diff = totalGol - line;
-    let probOver = logistic(diff * 2) * 100;
-    let probUnder = 100 - probOver;
-    ouData[line] = {over: probOver, under: probUnder};
-    ouTable += `<tr><td>${line}</td><td>${probOver.toFixed(1)}%</td><td>${probUnder.toFixed(1)}%</td></tr>`;
+// Buat input sesuai mode
+function buatInput(id) {
+  let mode=document.getElementById("mode"+id).value;
+  let html="";
+  if(mode==="all"){
+    html=`
+      <b>Tim A (Home)</b><br>
+      xG All: <input type="number" step="0.01" id="xgA${id}">
+      xGA All: <input type="number" step="0.01" id="xgaA${id}"><br>
+      <b>Tim B (Away)</b><br>
+      xG All: <input type="number" step="0.01" id="xgB${id}">
+      xGA All: <input type="number" step="0.01" id="xgaB${id}"><br>
+    `;
+  } else {
+    html=`
+      <b>Tim A (Home)</b><br>
+      xG Home: <input type="number" step="0.01" id="xgA${id}">
+      xGA Home: <input type="number" step="0.01" id="xgaA${id}"><br>
+      <b>Tim B (Away)</b><br>
+      xG Away: <input type="number" step="0.01" id="xgB${id}">
+      xGA Away: <input type="number" step="0.01" id="xgaB${id}"><br>
+    `;
+  }
+  document.getElementById("inputArea"+id).innerHTML=html;
+}
+
+// Hitung semua pertandingan
+function hitungSemua() {
+  for(let i=1;i<=matchCount;i++){ hitungMatch(i); }
+}
+
+// Hitung satu pertandingan
+function hitungMatch(id){
+  let xgA=parseFloat(document.getElementById("xgA"+id).value)||0;
+  let xgaA=parseFloat(document.getElementById("xgaA"+id).value)||0;
+  let xgB=parseFloat(document.getElementById("xgB"+id).value)||0;
+  let xgaB=parseFloat(document.getElementById("xgaB"+id).value)||0;
+
+  let lambdaA=(xgA+xgaB)/2;
+  let lambdaB=(xgB+xgaA)/2;
+  let totalGol=(xgA+xgaA+xgB+xgaB)/2;
+
+  // ===== O/U =====
+  let lines=[2.0,2.25,2.5,2.75,3.0];
+  let ouTable=""; let ouData={};
+  lines.forEach(line=>{
+    let result=probOverUnderMC(lambdaA,lambdaB,Math.round(line),600,0.12);
+    ouData[line]=result;
+    ouTable+=`<tr><td>${line}</td><td>${result.over.toFixed(1)}%</td><td>${result.under.toFixed(1)}%</td></tr>`;
   });
-  let over25 = ouData[2.5].over;
-  let under25 = ouData[2.5].under;
-  let rekomOU = "Netral";
-  if (over25 - under25 > 10) rekomOU = "Over 2.5";
-  else if (under25 - over25 > 10) rekomOU = "Under 2.5";
 
-  // HDP
-  let selisih = xgA - xgB;
-  let absSelisih = Math.abs(selisih);
+  let over25=ouData[2.5].over;
+  let under25=ouData[2.5].under;
+  let rekomOU;
+  const THRESHOLD=6.0;
+  if(Math.abs(over25-under25)<THRESHOLD){
+    rekomOU=`Rekomendasi O/U: <b>Netral</b> (Over ${over25.toFixed(1)}% vs Under ${under25.toFixed(1)}%)`;
+  } else if(over25>under25){
+    rekomOU=`Rekomendasi O/U: <b>Over 2.5</b> (${over25.toFixed(1)}% vs ${under25.toFixed(1)}%)`;
+  } else {
+    rekomOU=`Rekomendasi O/U: <b>Under 2.5</b> (${under25.toFixed(1)}% vs ${over25.toFixed(1)}%)`;
+  }
+
+  // ===== HDP =====
+  let selisih=xgA-xgB;
+  let absSelisih=Math.abs(selisih);
   let hdp;
-  if (absSelisih < 0.25) hdp = "0";
-  else if (absSelisih < 0.5) hdp = (selisih > 0 ? "A -0.25" : "B -0.25");
-  else if (absSelisih < 0.75) hdp = (selisih > 0 ? "A -0.5" : "B -0.5");
-  else hdp = (selisih > 0 ? "A -0.75+" : "B -0.75+");
+  if(absSelisih<0.25) hdp="0";
+  else if(absSelisih<0.5) hdp=(selisih>0?"A -0.25":"B -0.25");
+  else if(absSelisih<0.75) hdp=(selisih>0?"A -0.5":"B -0.5");
+  else hdp=(selisih>0?"A -0.75+":"B -0.75+");
 
-  // BTTS
-  let probBTTS = (Math.min(1,xgA/2) * Math.min(1,xgB/2) * 100).toFixed(1);
-  let bttsLabel = probBTTS > 55 ? "Yes" : (probBTTS < 45 ? "No" : "Netral");
+  // ===== BTTS =====
+  let probBTTS=(Math.min(1,xgA/2)*Math.min(1,xgB/2)*100).toFixed(1);
+  let bttsLabel=probBTTS>55?"Yes":(probBTTS<45?"No":"Netral");
 
-  // Skor Poisson
-  let scores = [];
-  for (let i = 0; i <= 4; i++) {
-    for (let j = 0; j <= 4; j++) {
-      let p = poisson(lambdaA,i)*poisson(lambdaB,j);
-      scores.push({score:`${i}-${j}`, prob:p});
+  // ===== Skor Poisson =====
+  let scores=[];
+  for(let i=0;i<=4;i++){
+    for(let j=0;j<=4;j++){
+      let p=poisson(lambdaA,i)*poisson(lambdaB,j);
+      scores.push({score:`${i}-${j}`,prob:p});
     }
   }
   scores.sort((a,b)=>b.prob-a.prob);
-  let topScores = scores.slice(0,3).map(s=>`${s.score} (${(s.prob*100).toFixed(1)}%)`).join("<br>");
+  let topScores=scores.slice(0,3).map(s=>`${s.score} (${(s.prob*100).toFixed(1)}%)`).join("<br>");
 
-  // 1X2
-  let winA=0, draw=0, winB=0;
+  // ===== 1X2 =====
+  let winA=0,draw=0,winB=0;
   scores.forEach(s=>{
     let [a,b]=s.score.split("-").map(Number);
-    if (a>b) winA+=s.prob;
-    else if (a==b) draw+=s.prob;
+    if(a>b) winA+=s.prob;
+    else if(a==b) draw+=s.prob;
     else winB+=s.prob;
   });
   winA*=100; draw*=100; winB*=100;
+  let favLabel=Math.abs(winA-winB)<7?"Netral":(winA>winB?"Tim A Favorit":"Tim B Favorit");
 
-  document.getElementById("output"+id).innerHTML = `
+  // ===== Output =====
+  document.getElementById("output"+id).innerHTML=`
     <b>⚽ Estimasi Gol:</b> A ${lambdaA.toFixed(2)} - B ${lambdaB.toFixed(2)}<br>
     Total: ${totalGol.toFixed(2)}<br><br>
-    <b>📈 O/U Probabilitas</b><br>
+    <b>📈 O/U Probabilitas (MC)</b><br>
     <table><tr><th>Line</th><th>Over</th><th>Under</th></tr>${ouTable}</table>
-    Rekomendasi: <b>${rekomOU}</b><br><br>
+    ${rekomOU}<br><br>
     <b>🏆 HDP:</b> ${hdp}<br>
     <b>🎯 BTTS:</b> ${probBTTS}% → ${bttsLabel}<br><br>
     <b>📌 Skor Poisson:</b><br>${topScores}<br><br>
     <b>🔮 1X2:</b><br>
     1: ${winA.toFixed(1)}% | X: ${draw.toFixed(1)}% | 2: ${winB.toFixed(1)}%<br>
+    → <b>${favLabel}</b>
   `;
 }
 
-function resetSemua() {
-  document.getElementById("matches").innerHTML = "";
-  matchCount = 0;
+// Reset semua pertandingan
+function resetSemua(){
+  document.getElementById("matches").innerHTML="";
+  matchCount=0;
 }
 </script>
 </body>
