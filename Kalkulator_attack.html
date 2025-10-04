@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Attack/Defense Strength & H2H Diff</title>
+    <title>Kalkulator Attack & Defense Strength (Full)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 30px auto; padding: 25px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 30px auto; padding: 25px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         h2 { color: #333; text-align: center; margin-bottom: 25px; }
         p { text-align: center; color: #666; margin-bottom: 20px; }
         .input-section { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
         .input-section h3 { color: #007bff; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; display: flex; align-items: center; }
-        .input-group label { flex: 2; font-weight: bold; margin-right: 10px; color: #555; }
+        .input-group { margin-bottom: 15px; display: flex; flex-wrap: wrap; align-items: center; }
+        .input-group label { flex: 2; font-weight: bold; margin-right: 10px; color: #555; min-width: 200px; }
         .input-group input[type="number"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; min-width: 80px;}
         input[type="number"]:focus { border-color: #007bff; outline: none; }
         button { width: 100%; padding: 12px; background: linear-gradient(45deg, #28a745, #218838); color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 15px; }
         button:hover { background: linear-gradient(45deg, #218838, #28a745); }
         .result { margin-top: 25px; padding: 20px; border: 1px solid #cce5ff; border-radius: 8px; background: #e0f2f7; display: none; }
+        .result h3 { color: #007bff; margin-top: 0; margin-bottom: 15px; }
         .result p { margin: 8px 0; font-size: 1.1em; color: #333; text-align: left; }
         .result strong { color: #0056b3; }
         .error { color: red; font-weight: bold; text-align: center; }
@@ -24,23 +25,23 @@
     </style>
 </head>
 <body>
-    <h2>⚽ Kalkulator Attack/Defense Strength & H2H Diff</h2>
-    <p>Hitung semua parameter strength dan Head-to-Head Difference yang diperlukan untuk model prediksi utama Anda.</p>
+    <h2>⚽ Kalkulator Attack & Defense Strength (Full)</h2>
+    <p>Hitung semua Attack Strength dan Defense Strength untuk Tim A dan Tim B (Home & Away) berdasarkan data historis dan rata-rata liga/kejuaraan.</p>
 
     <div class="input-section">
-        <h3>1. Data Performa Tim (Tim A)</h3>
-        <p class="warning">Gunakan rata-rata dari kompetisi yang sama (misal, La Liga atau Liga Champions).</p>
+        <h3>1. Data Performa Tim A</h3>
+        <p class="warning">Gunakan rata-rata dari kompetisi yang sama (misal, Liga Champions untuk pertandingan Liga Champions).</p>
         <div class="input-group">
             <label for="teamAGoalsScoredHomeAvg">Tim A: Rata-rata Gol Dicetak di Kandang:</label>
-            <input type="number" id="teamAGoalsScoredHomeAvg" step="0.01" value="2.1">
+            <input type="number" id="teamAGoalsScoredHomeAvg" step="0.01" value="2.3">
         </div>
         <div class="input-group">
             <label for="teamAGoalsConcededHomeAvg">Tim A: Rata-rata Gol Kebobolan di Kandang:</label>
-            <input type="number" id="teamAGoalsConcededHomeAvg" step="0.01" value="0.5">
+            <input type="number" id="teamAGoalsConcededHomeAvg" step="0.01" value="0.8">
         </div>
         <div class="input-group">
             <label for="teamAGoalsScoredAwayAvg">Tim A: Rata-rata Gol Dicetak di Tandang:</label>
-            <input type="number" id="teamAGoalsScoredAwayAvg" step="0.01" value="1.5">
+            <input type="number" id="teamAGoalsScoredAwayAvg" step="0.01" value="1.8">
         </div>
         <div class="input-group">
             <label for="teamAGoalsConcededAwayAvg">Tim A: Rata-rata Gol Kebobolan di Tandang:</label>
@@ -49,88 +50,53 @@
     </div>
 
     <div class="input-section">
-        <h3>2. Data Performa Tim (Tim B)</h3>
-        <p class="warning">Gunakan rata-rata dari kompetisi yang sama (misal, La Liga atau Liga Champions).</p>
+        <h3>2. Data Performa Tim B</h3>
+        <p class="warning">Gunakan rata-rata dari kompetisi yang sama.</p>
         <div class="input-group">
             <label for="teamBGoalsScoredHomeAvg">Tim B: Rata-rata Gol Dicetak di Kandang:</label>
-            <input type="number" id="teamBGoalsScoredHomeAvg" step="0.01" value="1.8">
+            <input type="number" id="teamBGoalsScoredHomeAvg" step="0.01" value="2.8">
         </div>
         <div class="input-group">
             <label for="teamBGoalsConcededHomeAvg">Tim B: Rata-rata Gol Kebobolan di Kandang:</label>
-            <input type="number" id="teamBGoalsConcededHomeAvg" step="0.01" value="1.0">
+            <input type="number" id="teamBGoalsConcededHomeAvg" step="0.01" value="0.5">
         </div>
         <div class="input-group">
             <label for="teamBGoalsScoredAwayAvg">Tim B: Rata-rata Gol Dicetak di Tandang:</label>
-            <input type="number" id="teamBGoalsScoredAwayAvg" step="0.01" value="1.0">
+            <input type="number" id="teamBGoalsScoredAwayAvg" step="0.01" value="2.0">
         </div>
         <div class="input-group">
             <label for="teamBGoalsConcededAwayAvg">Tim B: Rata-rata Gol Kebobolan di Tandang:</label>
-            <input type="number" id="teamBGoalsConcededAwayAvg" step="0.01" value="1.8">
+            <input type="number" id="teamBGoalsConcededAwayAvg" step="0.01" value="0.7">
         </div>
     </div>
 
     <div class="input-section">
         <h3>3. Data Rata-rata Liga/Kejuaraan</h3>
-        <p class="warning">Rata-rata ini untuk kompetisi secara keseluruhan, bukan hanya untuk tim tertentu.</p>
+        <p class="warning">Rata-rata ini untuk kompetisi secara keseluruhan (misal, Liga Champions), bukan hanya untuk tim tertentu.</p>
         <div class="input-group">
             <label for="leagueAvgGoalsScoredHomeTeams">Rata-rata Gol Dicetak Tim KANDANG di Liga:</label>
-            <input type="number" id="leagueAvgGoalsScoredHomeTeams" step="0.01" value="1.35">
+            <input type="number" id="leagueAvgGoalsScoredHomeTeams" step="0.01" value="1.6">
         </div>
         <div class="input-group">
             <label for="leagueAvgGoalsConcededHomeTeams">Rata-rata Gol Kebobolan Tim KANDANG di Liga:</label>
-            <input type="number" id="leagueAvgGoalsConcededHomeTeams" step="0.01" value="1.15">
+            <input type="number" id="leagueAvgGoalsConcededHomeTeams" step="0.01" value="1.3">
         </div>
         <div class="input-group">
             <label for="leagueAvgGoalsScoredAwayTeams">Rata-rata Gol Dicetak Tim TANDANG di Liga:</label>
-            <input type="number" id="leagueAvgGoalsScoredAwayTeams" step="0.01" value="1.15">
+            <input type="number" id="leagueAvgGoalsScoredAwayTeams" step="0.01" value="1.3">
         </div>
         <div class="input-group">
             <label for="leagueAvgGoalsConcededAwayTeams">Rata-rata Gol Kebobolan Tim TANDANG di Liga:</label>
-            <input type="number" id="leagueAvgGoalsConcededAwayTeams" step="0.01" value="1.35">
+            <input type="number" id="leagueAvgGoalsConcededAwayTeams" step="0.01" value="1.6">
         </div>
     </div>
 
-    <div class="input-section">
-        <h3>4. Data Head-to-Head (H2H)</h3>
-        <p class="warning">Masukkan skor dari 5 pertemuan terakhir (Tim A vs Tim B).</p>
-        <div class="input-group">
-            <label for="h2hMatch1A">Match 1: Skor Tim A:</label>
-            <input type="number" id="h2hMatch1A" value="2">
-            <label for="h2hMatch1B">Skor Tim B:</label>
-            <input type="number" id="h2hMatch1B" value="1">
-        </div>
-        <div class="input-group">
-            <label for="h2hMatch2A">Match 2: Skor Tim A:</label>
-            <input type="number" id="h2hMatch2A" value="0">
-            <label for="h2hMatch2B">Skor Tim B:</label>
-            <input type="number" id="h2hMatch2B" value="3">
-        </div>
-        <div class="input-group">
-            <label for="h2hMatch3A">Match 3: Skor Tim A:</label>
-            <input type="number" id="h2hMatch3A" value="1">
-            <label for="h2hMatch3B">Skor Tim B:</label>
-            <input type="number" id="h2hMatch3B" value="1">
-        </div>
-        <div class="input-group">
-            <label for="h2hMatch4A">Match 4: Skor Tim A:</label>
-            <input type="number" id="h2hMatch4A" value="2">
-            <label for="h2hMatch4B">Skor Tim B:</label>
-            <input type="number" id="h2hMatch4B" value="0">
-        </div>
-        <div class="input-group">
-            <label for="h2hMatch5A">Match 5: Skor Tim A:</label>
-            <input type="number" id="h2hMatch5A" value="1">
-            <label for="h2hMatch5B">Skor Tim B:</label>
-            <input type="number" id="h2hMatch5B" value="2">
-        </div>
-    </div>
-
-    <button onclick="calculateAllParameters()">Hitung Semua Parameter</button>
+    <button onclick="calculateStrengths()">Hitung Semua Strength</button>
 
     <div id="results" class="result"></div>
 
     <script>
-        function calculateAllParameters() {
+        function calculateStrengths() {
             const resultsDiv = document.getElementById('results');
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = ''; // Clear previous results
@@ -148,9 +114,9 @@
 
             // --- 2. Get League Averages Data ---
             const leagueAvgGoalsScoredHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsScoredHomeTeams').value);
-            const leagueAvgGoalsConcededHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededHomeTeams').value); // This is goals scored by away teams
+            const leagueAvgGoalsConcededHomeTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededHomeTeams').value); // This is goals scored by away teams, conceded by home teams
             const leagueAvgGoalsScoredAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsScoredAwayTeams').value);
-            const leagueAvgGoalsConcededAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededAwayTeams').value); // This is goals scored by home teams
+            const leagueAvgGoalsConcededAwayTeams = parseFloat(document.getElementById('leagueAvgGoalsConcededAwayTeams').value); // This is goals scored by home teams, conceded by away teams
             
             // Basic validation for league averages
             if (leagueAvgGoalsScoredHomeTeams <= 0 || leagueAvgGoalsConcededHomeTeams <= 0 ||
@@ -159,14 +125,14 @@
                 return;
             }
 
-            // --- 3. Validate all inputs ---
+            // --- 3. Validate all other inputs ---
             const allInputs = [
                 teamAGoalsScoredHomeAvg, teamAGoalsConcededHomeAvg, teamAGoalsScoredAwayAvg, teamAGoalsConcededAwayAvg,
                 teamBGoalsScoredHomeAvg, teamBGoalsConcededHomeAvg, teamBGoalsScoredAwayAvg, teamBGoalsConcededAwayAvg
             ];
 
             if (allInputs.some(isNaN)) {
-                resultsDiv.innerHTML = '<p class="error">Mohon masukkan semua data performa tim dan rata-rata liga dengan angka yang valid.</p>';
+                resultsDiv.innerHTML = '<p class="error">Mohon masukkan semua data performa tim dengan angka yang valid.</p>';
                 return;
             }
 
@@ -181,51 +147,33 @@
             // Formula: Team's Goals Conceded / League Avg Goals Conceded by that team type (Home/Away)
             // League Avg Goals Conceded by Home teams is Goals Scored by Away teams
             // League Avg Goals Conceded by Away teams is Goals Scored by Home teams
-            const homeDefenseStrengthA = teamAGoalsConcededHomeAvg / leagueAvgGoalsConcededHomeTeams; // A home concedes against away team goals
-            const awayDefenseStrengthA = teamAGoalsConcededAwayAvg / leagueAvgGoalsConcededAwayTeams; // A away concedes against home team goals
-            const homeDefenseStrengthB = teamBGoalsConcededHomeAvg / leagueAvgGoalsConcededHomeTeams; // B home concedes against away team goals
-            const awayDefenseStrengthB = teamBGoalsConcededAwayAvg / leagueAvgGoalsConcededAwayTeams; // B away concedes against home team goals
-
-            // --- Calculate H2H Diff ---
-            let h2hTotalDiff = 0;
-            let h2hMatchesCount = 0;
-            for (let i = 1; i <= 5; i++) {
-                const scoreA = parseFloat(document.getElementById(`h2hMatch${i}A`).value);
-                const scoreB = parseFloat(document.getElementById(`h2hMatch${i}B`).value);
-
-                if (!isNaN(scoreA) && !isNaN(scoreB)) {
-                    h2hTotalDiff += (scoreA - scoreB);
-                    h2hMatchesCount++;
-                }
-            }
-            const h2hDiff = h2hMatchesCount > 0 ? h2hTotalDiff / h2hMatchesCount : 0;
+            const homeDefenseStrengthA = teamAGoalsConcededHomeAvg / leagueAvgGoalsScoredAwayTeams; // A home concedes against away team goals scored
+            const awayDefenseStrengthA = teamAGoalsConcededAwayAvg / leagueAvgGoalsScoredHomeTeams; // A away concedes against home team goals scored
+            const homeDefenseStrengthB = teamBGoalsConcededHomeAvg / leagueAvgGoalsScoredAwayTeams; // B home concedes against away team goals scored
+            const awayDefenseStrengthB = teamBGoalsConcededAwayAvg / leagueAvgGoalsScoredHomeTeams; // B away concedes against home team goals scored
 
             // --- Display Results ---
             resultsDiv.innerHTML = `
-                <h3>Hasil Kalkulasi untuk Model Prediksi Utama</h3>
+                <h3>Hasil Kalkulasi Strengths</h3>
+                <p>Ini adalah nilai-nilai yang akan Anda masukkan ke kalkulator prediksi utama Anda.</p>
+                
                 <h4>Tim A</h4>
-                <p><strong>Input 'homeAttack' (Jika Tim A bermain kandang):</strong> ${homeAttackStrengthA.toFixed(2)}</p>
-                <p><strong>Input 'awayAttack' (Jika Tim A bermain tandang):</strong> ${awayAttackStrengthA.toFixed(2)}</p>
-                <p><strong>Input 'homeDef' (Jika Tim A bermain kandang):</strong> ${homeDefenseStrengthA.toFixed(2)}</p>
-                <p><strong>Input 'awayDef' (Jika Tim A bermain tandang):</strong> ${awayDefenseStrengthA.toFixed(2)}</p>
+                <p><strong>'homeAttack' (jika Tim A kandang):</strong> ${homeAttackStrengthA.toFixed(2)}</p>
+                <p><strong>'homeDef' (jika Tim A kandang):</strong> ${homeDefenseStrengthA.toFixed(2)}</p>
+                <p><strong>'awayAttack' (jika Tim A tandang):</strong> ${awayAttackStrengthA.toFixed(2)}</p>
+                <p><strong>'awayDef' (jika Tim A tandang):</strong> ${awayDefenseStrengthA.toFixed(2)}</p>
                 
                 <h4>Tim B</h4>
-                <p><strong>Input 'homeAttack' (Jika Tim B bermain kandang):</strong> ${homeAttackStrengthB.toFixed(2)}</p>
-                <p><strong>Input 'awayAttack' (Jika Tim B bermain tandang):</strong> ${awayAttackStrengthB.toFixed(2)}</p>
-                <p><strong>Input 'homeDef' (Jika Tim B bermain kandang):</strong> ${homeDefenseStrengthB.toFixed(2)}</p>
-                <p><strong>Input 'awayDef' (Jika Tim B bermain tandang):</strong> ${awayDefenseStrengthB.toFixed(2)}</p>
-
-                <h4>Head-to-Head Difference (A - B)</h4>
-                <p><strong>Input 'h2hDiff':</strong> ${h2hDiff.toFixed(2)}</p>
+                <p><strong>'homeAttack' (jika Tim B kandang):</strong> ${homeAttackStrengthB.toFixed(2)}</p>
+                <p><strong>'homeDef' (jika Tim B kandang):</strong> ${homeDefenseStrengthB.toFixed(2)}</p>
+                <p><strong>'awayAttack' (jika Tim B tandang):</strong> ${awayAttackStrengthB.toFixed(2)}</p>
+                <p><strong>'awayDef' (jika Tim B tandang):</strong> ${awayDefenseStrengthB.toFixed(2)}</p>
 
                 <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
-                    <em>Gunakan nilai-nilai ini untuk mengisi parameter di kalkulator prediksi utama Anda.<br>
-                    Perhatikan apakah Tim A atau Tim B yang bermain kandang untuk memilih Attack/Defense Strength yang sesuai.</em>
+                    <em>Pilih nilai yang sesuai berdasarkan tim mana yang kandang/tandang di pertandingan yang Anda prediksi.</em>
                 </p>
             `;
         }
     </script>
 </body>
 </html>
-
-    
