@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Attack & Defense Strength (Sepak Bola)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 30px;
+            border-top: 2px solid #0056b3;
+            padding-top: 20px;
+        }
+        .results p {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .results p span {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .warning {
+            color: #dc3545;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kalkulator Attack & Defense Strength</h1>
+        <p style="text-align: center; margin-bottom: 25px;">
+            Masukkan data performa tim dan rata-rata gol liga untuk menghitung kekuatan serangan dan pertahanan.
+        </p>
+
+        <!-- Input Data Liga -->
+        <div class="input-group">
+            <h2>Data Liga</h2>
+            <label for="avgGoalsLeague">Rata-rata Gol Per Pertandingan di Liga (misal: 2.85 untuk EPL):</label>
+            <input type="number" id="avgGoalsLeague" step="0.01" value="2.85">
+        </div>
+
+        <!-- Input Data Tim Home -->
+        <div class="input-group">
+            <h2>Data Tim Home</h2>
+            <label for="teamHomeName">Nama Tim Home:</label>
+            <input type="text" id="teamHomeName" value="Tim A">
+
+            <label for="matchesPlayedHome">Jumlah Laga Home:</label>
+            <input type="number" id="matchesPlayedHome" value="10">
+
+            <label for="goalsScoredHome">Gol Dicetak (Home):</label>
+            <input type="number" id="goalsScoredHome" value="25">
+
+            <label for="goalsConcededHome">Gol Kebobolan (Home):</label>
+            <input type="number" id="goalsConcededHome" value="12">
+        </div>
+
+        <!-- Input Data Tim Away -->
+        <div class="input-group">
+            <h2>Data Tim Away</h2>
+            <label for="teamAwayName">Nama Tim Away:</label>
+            <input type="text" id="teamAwayName" value="Tim B">
+
+            <label for="matchesPlayedAway">Jumlah Laga Away:</label>
+            <input type="number" id="matchesPlayedAway" value="10">
+
+            <label for="goalsScoredAway">Gol Dicetak (Away):</label>
+            <input type="number" id="goalsScoredAway" value="18">
+
+            <label for="goalsConcededAway">Gol Kebobolan (Away):</label>
+            <input type="number" id="goalsConcededAway" value="22">
+        </div>
+
+        <button onclick="calculateStrengths()">Hitung Kekuatan Tim</button>
+        <p class="warning" id="warningMessage"></p>
+
+        <!-- Area Output Hasil -->
+        <div class="results" id="results">
+            <h2>Hasil Perhitungan</h2>
+            <p>Attack Strength <span id="outputTeamHomeName1">Tim A</span> (Home): <span id="attackStrengthHome">N/A</span></p>
+            <p>Defense Strength <span id="outputTeamHomeName2">Tim A</span> (Home): <span id="defenseStrengthHome">N/A</span></p>
+            <p>Attack Strength <span id="outputTeamAwayName1">Tim B</span> (Away): <span id="attackStrengthAway">N/A</span></p>
+            <p>Defense Strength <span id="outputTeamAwayName2">Tim B</span> (Away): <span id="defenseStrengthAway">N/A</span></p>
+            <hr style="margin: 15px 0;">
+            <p>Ekspektasi Gol <span id="outputTeamHomeName3">Tim A</span>: <span id="expectedGoalsHome">N/A</span></p>
+            <p>Ekspektasi Gol <span id="outputTeamAwayName3">Tim B</span>: <span id="expectedGoalsAway">N/A</span></p>
+        </div>
+    </div>
+
+    <script>
+        function calculateStrengths() {
+            // Dapatkan nilai dari input
+            const avgGoalsLeague = parseFloat(document.getElementById('avgGoalsLeague').value);
+            const teamHomeName = document.getElementById('teamHomeName').value || 'Tim A';
+            const matchesPlayedHome = parseFloat(document.getElementById('matchesPlayedHome').value);
+            const goalsScoredHome = parseFloat(document.getElementById('goalsScoredHome').value);
+            const goalsConcededHome = parseFloat(document.getElementById('goalsConcededHome').value);
+
+            const teamAwayName = document.getElementById('teamAwayName').value || 'Tim B';
+            const matchesPlayedAway = parseFloat(document.getElementById('matchesPlayedAway').value);
+            const goalsScoredAway = parseFloat(document.getElementById('goalsScoredAway').value);
+            const goalsConcededAway = parseFloat(document.getElementById('goalsConcededAway').value);
+
+            const warningMessage = document.getElementById('warningMessage');
+            warningMessage.textContent = ''; // Hapus pesan peringatan sebelumnya
+
+            // Validasi input
+            if (isNaN(avgGoalsLeague) || avgGoalsLeague <= 0 ||
+                isNaN(matchesPlayedHome) || matchesPlayedHome <= 0 ||
+                isNaN(goalsScoredHome) || isNaN(goalsConcededHome) ||
+                isNaN(matchesPlayedAway) || matchesPlayedAway <= 0 ||
+                isNaN(goalsScoredAway) || isNaN(goalsConcededAway)) {
+                warningMessage.textContent = "Mohon masukkan semua data dengan benar (angka positif untuk jumlah laga & rata-rata gol liga).";
+                // Reset output
+                document.getElementById('attackStrengthHome').textContent = 'N/A';
+                document.getElementById('defenseStrengthHome').textContent = 'N/A';
+                document.getElementById('attackStrengthAway').textContent = 'N/A';
+                document.getElementById('defenseStrengthAway').textContent = 'N/A';
+                document.getElementById('expectedGoalsHome').textContent = 'N/A';
+                document.getElementById('expectedGoalsAway').textContent = 'N/A';
+                return;
+            }
+
+            // Hitung rata-rata gol per tim per laga di liga
+            const avgGoalsPerTeamPerMatch = avgGoalsLeague / 2;
+
+            // --- Hitung Strength Tim Home ---
+            const goalsScoredPerMatchHome = goalsScoredHome / matchesPlayedHome;
+            const goalsConcededPerMatchHome = goalsConcededHome / matchesPlayedHome;
+
+            const attackStrengthHome = goalsScoredPerMatchHome / avgGoalsPerTeamPerMatch;
+            const defenseStrengthHome = goalsConcededPerMatchHome / avgGoalsPerTeamPerMatch;
+
+            // --- Hitung Strength Tim Away ---
+            const goalsScoredPerMatchAway = goalsScoredAway / matchesPlayedAway;
+            const goalsConcededPerMatchAway = goalsConcededAway / matchesPlayedAway;
+
+            const attackStrengthAway = goalsScoredPerMatchAway / avgGoalsPerTeamPerMatch;
+            const defenseStrengthAway = goalsConcededPerMatchAway / avgGoalsPerTeamPerMatch;
+
+            // --- Hitung Ekspektasi Gol ---
+            // Ekspektasi gol Tim Home (saat melawan Tim Away)
+            const expectedGoalsHome = attackStrengthHome * defenseStrengthAway * avgGoalsPerTeamPerMatch;
+            // Ekspektasi gol Tim Away (saat melawan Tim Home)
+            const expectedGoalsAway = attackStrengthAway * defenseStrengthHome * avgGoalsPerTeamPerMatch;
+
+
+            // Tampilkan hasil
+            document.getElementById('outputTeamHomeName1').textContent = teamHomeName;
+            document.getElementById('outputTeamHomeName2').textContent = teamHomeName;
+            document.getElementById('outputTeamHomeName3').textContent = teamHomeName;
+            document.getElementById('outputTeamAwayName1').textContent = teamAwayName;
+            document.getElementById('outputTeamAwayName2').textContent = teamAwayName;
+            document.getElementById('outputTeamAwayName3').textContent = teamAwayName;
+
+
+            document.getElementById('attackStrengthHome').textContent = attackStrengthHome.toFixed(2);
+            document.getElementById('defenseStrengthHome').textContent = defenseStrengthHome.toFixed(2);
+            document.getElementById('attackStrengthAway').textContent = attackStrengthAway.toFixed(2);
+            document.getElementById('defenseStrengthAway').textContent = defenseStrengthAway.toFixed(2);
+            document.getElementById('expectedGoalsHome').textContent = expectedGoalsHome.toFixed(2);
+            document.getElementById('expectedGoalsAway').textContent = expectedGoalsAway.toFixed(2);
+        }
+    </script>
+</body>
+</html>
