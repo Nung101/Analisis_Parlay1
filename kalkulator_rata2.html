@@ -1,114 +1,96 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalkulator Rata-rata Gol Liga (Gabungan)</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f8f9fa;
-    margin: 20px;
-  }
-  h1 {
-    text-align: center;
-  }
-  textarea {
-    width: 100%;
-    height: 60px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    padding: 8px;
-    font-size: 14px;
-  }
-  button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    margin: 5px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-  .result {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 15px;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Rata-Rata Gol Sepak Bola</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .result { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+    </style>
 </head>
 <body>
-  <h1>⚽ Kalkulator Rata-rata Gol Liga (Home + Away)</h1>  <h3>🏠 Data Kandang</h3>
-  <label>Main Kandang (pisahkan koma):</label>
-  <textarea id="mainHome"></textarea>
-  <label>Gol Kandang:</label>
-  <textarea id="golHome"></textarea>
-  <label>Kebobolan Kandang:</label>
-  <textarea id="kebobolanHome"></textarea>  <h3>🚗 Data Tandang</h3>
-  <label>Main Tandang:</label>
-  <textarea id="mainAway"></textarea>
-  <label>Gol Tandang:</label>
-  <textarea id="golAway"></textarea>
-  <label>Kebobolan Tandang:</label>
-  <textarea id="kebobolanAway"></textarea>  <div style="text-align:center">
-    <button onclick="calculate()">Hitung Rata-rata</button>
-    <button onclick="resetAll()">Reset</button>
-  </div>  <div class="result" id="result">Hasil akan muncul di sini...</div>  <script>
-    function parseInput(str) {
-      return str.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
-    }
+    <h2>Kalkulator Rata-Rata Gol dan Kebobolan</h2>
+    <p>Masukkan data pertandingan: jumlah gol dicetak (scored) dan kebobolan (conceded) untuk kandang dan tandang. Kemudian klik tombol hitung untuk melihat rata-rata.</p>
 
-    function average(arr) {
-      if (arr.length === 0) return 0;
-      return arr.reduce((a,b) => a + b, 0) / arr.length;
-    }
+    <form id="golForm">
+        <label for="homeGames">Jumlah Pertandingan Kandang:</label>
+        <input type="number" id="homeGames" min="1" value="1" required>
 
-    function calculate() {
-      const mainHome = parseInput(document.getElementById('mainHome').value);
-      const golHome = parseInput(document.getElementById('golHome').value);
-      const kebHome = parseInput(document.getElementById('kebobolanHome').value);
+        <label for="homeScored">Total Gol Dicetak di Kandang:</label>
+        <input type="number" id="homeScored" min="0" value="0" required>
 
-      const mainAway = parseInput(document.getElementById('mainAway').value);
-      const golAway = parseInput(document.getElementById('golAway').value);
-      const kebAway = parseInput(document.getElementById('kebobolanAway').value);
+        <label for="homeConceded">Total Gol Kebobolan di Kandang:</label>
+        <input type="number" id="homeConceded" min="0" value="0" required>
 
-      const totalMainHome = mainHome.reduce((a,b)=>a+b,0);
-      const totalMainAway = mainAway.reduce((a,b)=>a+b,0);
+        <label for="awayGames">Jumlah Pertandingan Tandang:</label>
+        <input type="number" id="awayGames" min="1" value="1" required>
 
-      const totalGolHome = golHome.reduce((a,b)=>a+b,0);
-      const totalKebHome = kebHome.reduce((a,b)=>a+b,0);
-      const totalGolAway = golAway.reduce((a,b)=>a+b,0);
-      const totalKebAway = kebAway.reduce((a,b)=>a+b,0);
+        <label for="awayScored">Total Gol Dicetak di Tandang:</label>
+        <input type="number" id="awayScored" min="0" value="0" required>
 
-      const avgGolHome = totalGolHome / totalMainHome || 0;
-      const avgKebHome = totalKebHome / totalMainHome || 0;
-      const avgGolAway = totalGolAway / totalMainAway || 0;
-      const avgKebAway = totalKebAway / totalMainAway || 0;
+        <label for="awayConceded">Total Gol Kebobolan di Tandang:</label>
+        <input type="number" id="awayConceded" min="0" value="0" required>
 
-      const totalMatches = totalMainHome + totalMainAway;
-      const totalGoals = totalGolHome + totalGolAway;
-      const totalConceded = totalKebHome + totalKebAway;
-      const totalAvgGoals = (totalGoals + totalConceded) / totalMatches || 0;
+        <button type="button" onclick="hitungRataRata()">Hitung Rata-Rata</button>
+    </form>
 
-      document.getElementById('result').innerHTML = `
-        🏠 <b>Rata-rata Gol Kandang:</b> ${avgGolHome.toFixed(2)} | 
-        <b>Kebobolan:</b> ${avgKebHome.toFixed(2)}<br>
-        🚗 <b>Rata-rata Gol Tandang:</b> ${avgGolAway.toFixed(2)} | 
-        <b>Kebobolan:</b> ${avgKebAway.toFixed(2)}<br><br>
-        ⚽ <b>Total Rata-rata Gol Liga (O/U baseline):</b> ${totalAvgGoals.toFixed(2)}
-      `;
-    }
+    <div id="result" class="result" style="display: none;"></div>
 
-    function resetAll() {
-      document.querySelectorAll('textarea').forEach(t => t.value = '');
-      document.getElementById('result').innerHTML = 'Hasil akan muncul di sini...';
-    }
-  </script></body>
+    <script>
+        function hitungRataRata() {
+            // Ambil nilai dari input
+            const homeGames = parseInt(document.getElementById('homeGames').value);
+            const homeScored = parseFloat(document.getElementById('homeScored').value);
+            const homeConceded = parseFloat(document.getElementById('homeConceded').value);
+            const awayGames = parseInt(document.getElementById('awayGames').value);
+            const awayScored = parseFloat(document.getElementById('awayScored').value);
+            const awayConceded = parseFloat(document.getElementById('awayConceded').value);
+
+            // Validasi input
+            if (homeGames <= 0 || awayGames <= 0) {
+                alert('Jumlah pertandingan harus lebih dari 0.');
+                return;
+            }
+
+            // Hitung rata-rata
+            const avgHomeScored = (homeScored / homeGames).toFixed(2);
+            const avgHomeConceded = (homeConceded / homeGames).toFixed(2);
+            const avgAwayScored = (awayScored / awayGames).toFixed(2);
+            const avgAwayConceded = (awayConceded / awayGames).toFixed(2);
+
+            // Total rata-rata keseluruhan
+            const totalGames = homeGames + awayGames;
+            const totalScored = homeScored + awayScored;
+            const totalConceded = homeConceded + awayConceded;
+            const avgTotalScored = (totalScored / totalGames).toFixed(2);
+            const avgTotalConceded = (totalConceded / totalGames).toFixed(2 Tampilkan hasil
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h3>Hasil Perhitungan Rata-Rata</h3>
+                <p><strong>Kandang (dari ${homeGames} pertandingan):</strong></p>
+                <ul>
+                    <li>Rata-rata Gol Dicetak: ${avgHomeScored}</li>
+                    <li>Rata-rata Gol Kebobolan: ${avgHomeConceded}</li>
+                </ul>
+                <p><strong>Tandang (dari ${awayGames} pertandingan):</strong></p>
+                <ul>
+                    <li>Rata-rata Gol Dicetak: ${avgAwayScored}</li>
+                    <li>Rata-rata Gol Kebobolan: ${avgAwayConceded}</li>
+                </ul>
+                <p><strong>Keseluruhan (dari ${totalGames} pertandingan):</strong></p>
+                <ul>
+                    <li>Rata-rata Gol Dicetak: ${avgTotalScored}</li>
+                    <li>Rata-rata Gol Kebobolan: ${avgTotalConceded}</li>
+                </ul>
+            `;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
 </html>
+
