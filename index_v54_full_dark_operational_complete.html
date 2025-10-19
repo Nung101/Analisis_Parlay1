@@ -1,0 +1,641 @@
+q<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>Football Analyzer Pro v54 — Full Dark Operational</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+:root {
+  --bg:#071015; --panel:#0d1b21; --card:#08161a;
+  --accent:#06b6d4; --muted:#9fd6ee; --text:#e8fbff;
+  --success:#00ff99; --warn:#f7b731; --danger:#ff6b6b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.container{max-width:1280px;margin:12px auto;padding:18px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.h-left{display:flex;flex-direction:column}
+.h-right{display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo svg{width:44px;height:28px}
+h1{font-size:20px;margin:0}
+.small{font-size:13px;color:var(--muted)}
+.block{background:var(--panel);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.05)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.col{flex:1;min-width:160px}
+label{display:block;font-size:13px;color:var(--muted);margin:6px 0}
+input[type="text"],input[type="number"],select,textarea{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:#071a20;color:var(--text)}
+button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#001f24;cursor:pointer;font-weight:600}
+.btn-muted{background:#0e3b45;color:var(--text);border:1px solid rgba(255,255,255,0.08)}
+.card{background:var(--card);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)}
+.pre{background:#02131a;padding:10px;border-radius:8px;font-family:ui-monospace,monospace;margin-top:8px;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:6px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;text-align:left}
+.status-red{color:var(--danger)} .status-yellow{color:var(--warn)} .status-green{color:var(--success)}
+.cr-indicator{color:var(--success);font-weight:600;margin-left:8px;display:inline-block;opacity:0;transition:opacity .12s ease}
+.cr-indicator.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="h-left">
+      <h1>Football Analyzer Pro — v54 Full Dark Operational</h1>
+      <div class="small">Semua tombol aktif • Auto TI/CR • Absensi • Odds Trap • Online Stadion • Auto-CSV</div>
+    </div>
+    <div class="h-right">
+      <div class="logo" title="v54 AI Tactical Engine">
+        <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="120" height="60" rx="8" fill="#062f33"/>
+          <g transform="translate(10,8)" fill="#9ff2ea">
+            <text x="0" y="16" font-family="Inter, Arial" font-size="12" font-weight="700">v54</text>
+            <text x="0" y="36" font-family="Inter, Arial" font-size="10">AI Tactical</text>
+          </g>
+          <circle cx="100" cy="30" r="6" fill="#06b6d4" />
+        </svg>
+      </div>
+      <div id="geoStatus" class="small">Geo Online</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="row">
+      <div class="col">
+        <label>Nama Liga</label>
+        <input type="text" id="league" placeholder="Premier League / Euro Qual / World Cup dst">
+      </div>
+      <div class="col">
+        <label>Pertandingan</label>
+        <input type="text" id="matchName" placeholder="Contoh : Man City vs Tottenham">
+      </div>
+      <div class="col">
+        <label>Tanggal</label>
+        <input type="text" id="matchDate" placeholder="2025-10-19">
+      </div>
+    </div>
+  </div>
+<div class="block">
+    <h3>📊 Data Tim & Statistik</h3>
+    <div class="row">
+      <div class="col">
+        <label>Tim Home</label>
+        <input type="text" id="teamHome" placeholder="Home team">
+      </div>
+      <div class="col">
+        <label>Tim Away</label>
+        <input type="text" id="teamAway" placeholder="Away team">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>xG (Home)</label><input type="number" step="0.01" id="xgHome"></div>
+      <div class="col"><label>xG (Away)</label><input type="number" step="0.01" id="xgAway"></div>
+      <div class="col"><label>SOT Home</label><input type="number" id="sotHome"></div>
+      <div class="col"><label>SOT Away</label><input type="number" id="sotAway"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Goals Home</label><input type="number" id="goalsHome"></div>
+      <div class="col"><label>Goals Away</label><input type="number" id="goalsAway"></div>
+      <div class="col"><label>Conversion Rate Home</label><input type="number" id="convHome" step="0.01"></div>
+      <div class="col"><label>Conversion Rate Away</label><input type="number" id="convAway" step="0.01"></div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <button id="btnAutoCR">Hitung CR Otomatis</button>
+        <span id="crStatus" class="cr-indicator">✓ CR terhitung</span>
+      </div>
+      <div class="col">
+        <button id="btnAutoTI">Hitung TI Otomatis</button>
+        <span id="tiStatus" class="cr-indicator">✓ TI terhitung</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Tackles Home</label><input type="number" id="tackleHome"></div>
+      <div class="col"><label>Interceptions Home</label><input type="number" id="interHome"></div>
+      <div class="col"><label>Tackles Away</label><input type="number" id="tackleAway"></div>
+      <div class="col"><label>Interceptions Away</label><input type="number" id="interAway"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>TI Home</label><input type="number" id="tiHome"></div>
+      <div class="col"><label>TI Away</label><input type="number" id="tiAway"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Clean Sheet Home</label><input type="number" step="0.01" id="csHome"></div>
+      <div class="col"><label>Clean Sheet Away</label><input type="number" step="0.01" id="csAway"></div>
+      <div class="col"><label>Goals Conceded Home</label><input type="number" id="gcHome"></div>
+      <div class="col"><label>Goals Conceded Away</label><input type="number" id="gcAway"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Saves per Game (Home)</label><input type="number" id="saveHome"></div>
+      <div class="col"><label>Saves per Game (Away)</label><input type="number" id="saveAway"></div>
+      <div class="col"><label>Errors Leading to Goal (Home)</label><input type="number" id="errHome"></div>
+      <div class="col"><label>Errors Leading to Goal (Away)</label><input type="number" id="errAway"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Form 5 Match Home (W,D,L)</label><input type="text" id="formRawHome"></div>
+      <div class="col"><label>Form 5 Match Away (W,D,L)</label><input type="text" id="formRawAway"></div>
+      <div class="col"><label>H2H Results (5 match)</label><input type="text" id="h2hResults" placeholder="contoh: WDLWL"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Absensi DF Home</label><input type="number" id="absDfHome"></div>
+      <div class="col"><label>Absensi MF Home</label><input type="number" id="absMfHome"></div>
+      <div class="col"><label>Absensi FW Home</label><input type="number" id="absFwHome"></div>
+      <div class="col"><label>Absensi DF Away</label><input type="number" id="absDfAway"></div>
+      <div class="col"><label>Absensi MF Away</label><input type="number" id="absMfAway"></div>
+      <div class="col"><label>Absensi FW Away</label><input type="number" id="absFwAway"></div>
+    </div>
+  </div>
+<div class="block">
+    <h3>🎯 Market Odds & Trap Detector</h3>
+    <div class="row">
+      <div class="col"><label>Line HDP</label><input type="number" step="0.25" id="hdpLine" value="0.25"></div>
+      <div class="col"><label>HDP Home Open</label><input type="number" step="0.01" id="hdpHomeOpen"></div>
+      <div class="col"><label>HDP Home Now</label><input type="number" step="0.01" id="hdpHomeNow"></div>
+      <div class="col"><label>HDP Away Open</label><input type="number" step="0.01" id="hdpAwayOpen"></div>
+      <div class="col"><label>HDP Away Now</label><input type="number" step="0.01" id="hdpAwayNow"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Line Over/Under</label><input type="number" step="0.25" id="ouLine" value="2.5"></div>
+      <div class="col"><label>Over Open</label><input type="number" step="0.01" id="ouOverOpen"></div>
+      <div class="col"><label>Over Now</label><input type="number" step="0.01" id="ouOverNow"></div>
+      <div class="col"><label>Under Open</label><input type="number" step="0.01" id="ouUnderOpen"></div>
+      <div class="col"><label>Under Now</label><input type="number" step="0.01" id="ouUnderNow"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>ELO Home</label><input type="number" id="eloHome" value="1500"></div>
+      <div class="col"><label>ELO Away</label><input type="number" id="eloAway" value="1480"></div>
+      <div class="col"><label>Monte Carlo Runs</label><input type="number" id="mcRuns" value="8000" step="500"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><button id="btnExample">Contoh Otomatis</button></div>
+      <div class="col"><button id="btnAnalyze">Analisis</button></div>
+      <div class="col"><button id="btnReset">Reset Semua</button></div>
+    </div>
+
+    <div id="anomalyTop" style="display:none; background:#441818; border:1px solid #b55; color:#fdd; padding:10px; border-radius:6px; margin-top:10px;"></div>
+
+    <h3>🧠 Rekomendasi Terbaik</h3>
+    <div id="bestRec" class="result">--</div>
+
+    <h3>📈 Trap Market Table</h3>
+    <table id="trapTable">
+      <tr><th>Pasar</th><th>Open</th><th>Now</th><th>Δ%</th><th>Arah</th><th>Prob Model</th><th>Edge%</th><th>Status</th></tr>
+    </table>
+  </div>
+
+  <div class="block">
+    <h3>⚙️ Analisis & Visualisasi</h3>
+    <div id="summary" class="result">Tekan “Analisis” untuk hasil.</div>
+
+    <canvas id="hist" width="520" height="140" style="background:#181818; border-radius:8px; margin-top:10px; display:block;"></canvas>
+
+    <div style="margin-top:12px;">
+      <h4>Confidence Meter</h4>
+      <div style="background:#333; width:100%; height:22px; border-radius:10px; position:relative;">
+        <div id="confidenceBar" style="position:absolute; height:22px; background:#0b74de; border-radius:10px; width:0%;"></div>
+        <span id="confidenceLabel" style="position:absolute; left:50%; transform:translateX(-50%); font-size:12px; top:3px;">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>🌍 Liga & Lokasi</h3>
+    <div class="row">
+      <div class="col"><label>Nama Liga</label><input type="text" id="leagueName" placeholder="misal: Premier League"></div>
+      <div class="col"><label>Stadion</label><input type="text" id="stadiumName" placeholder="misal: Etihad Stadium"></div>
+      <div class="col"><label>Negara</label><input type="text" id="countryName" placeholder="misal: Inggris"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Lat (otomatis)</label><input type="text" id="lat" readonly></div>
+      <div class="col"><label>Lon (otomatis)</label><input type="text" id="lon" readonly></div>
+      <div class="col"><button id="btnFindCoord">Cari Koordinat</button></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Fatigue / Jarak Travel (km)</label><input type="number" id="travelKm" step="1" value="0"></div>
+      <div class="col"><label>Day Rest</label><input type="number" id="dayRest" step="1" value="3"></div>
+    </div>
+
+    <div class="row">
+      <div class="col"><label>Mode Setelah Jeda Internasional</label><input type="checkbox" id="afterBreak"></div>
+    </div>
+  </div>
+<script>
+// =================== FINAL INTEGRATED SCRIPT (REPAIRED v55) ===================
+
+// --- Utilities
+function safe(v,d=0){const x=parseFloat(v);return isNaN(x)?d:x;}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+function percent(x){return (100*x).toFixed(1) + '%';}
+function nowDate(){ const d=new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+// ensure element helper
+function ensureEl(id, tag='div', parent=document.body, cls=''){ let el=document.getElementById(id); if(!el){ el=document.createElement(tag); el.id=id; if(cls) el.className = cls; parent.appendChild(el); } return el; }
+
+// --- Poisson sampler (needed by MC)
+function poisson(lambda){
+  const L = Math.exp(-lambda);
+  let p = 1.0;
+  let k = 0;
+  while(p > L){
+    k++;
+    p *= Math.random();
+    if(k>2000) break;
+  }
+  return Math.max(0, k-1);
+}
+
+// --- small RNG normal (Box-Muller) for adaptive sampling if needed
+function randNormal(mu=0,sigma=1){ let u=0,v=0; while(u===0) u=Math.random(); while(v===0) v=Math.random(); return mu + sigma * Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
+
+// --- Auto TI (Tackles + Interceptions)
+function autoTI(){
+  const tH = safe(document.getElementById('tackleHome')?.value,0);
+  const iH = safe(document.getElementById('interHome')?.value,0);
+  const tA = safe(document.getElementById('tackleAway')?.value,0);
+  const iA = safe(document.getElementById('interAway')?.value,0);
+  const tiH = (tH + iH).toFixed(1);
+  const tiA = (tA + iA).toFixed(1);
+  const elH = document.getElementById('tiHome'), elA = document.getElementById('tiAway');
+  if(elH) elH.value = tiH; if(elA) elA.value = tiA;
+}
+
+// --- Auto Conversion Rate (Goals ÷ SOT)
+function autoCR(){
+  const gh = safe(document.getElementById('goalsHome')?.value, NaN);
+  const ga = safe(document.getElementById('goalsAway')?.value, NaN);
+  const sh = safe(document.getElementById('sotHome')?.value, NaN);
+  const sa = safe(document.getElementById('sotAway')?.value, NaN);
+  if(!isNaN(gh) && sh>0) document.getElementById('convHome').value = (gh/sh).toFixed(2);
+  if(!isNaN(ga) && sa>0) document.getElementById('convAway').value = (ga/sa).toFixed(2);
+  const ind = document.getElementById('crStatus'); if(ind){ ind.classList.add('show'); setTimeout(()=>ind.classList.remove('show'),2500); }
+}
+
+// --- Geocode stadium / club name via Nominatim (online)
+async function findCoords(){
+  const stadiumName = (document.getElementById('stadiumName')?.value || document.getElementById('teamHome')?.value || '').trim();
+  if(!stadiumName){ alert('Masukkan nama stadion atau nama tim Home dulu.'); return; }
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(stadiumName) + '&limit=1';
+    const res = await fetch(url, {headers:{'Accept':'application/json'}, method:'GET'});
+    if(!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    if(data && data.length>0){
+      const r = data[0];
+      const latEl = document.getElementById('lat'), lonEl = document.getElementById('lon');
+      if(latEl) latEl.value = parseFloat(r.lat).toFixed(4);
+      if(lonEl) lonEl.value = parseFloat(r.lon).toFixed(4);
+      document.getElementById('geoStatus').textContent = 'Geo: OK (online)';
+    } else { alert('Lokasi tidak ditemukan melalui layanan online.'); document.getElementById('geoStatus').textContent='Geo: Not found'; }
+  }catch(e){ console.warn(e); alert('Gagal ambil koordinat (cek koneksi).'); document.getElementById('geoStatus').textContent='Geo: Error'; }
+}
+
+// --- Travel (haversine) kilometers, return int km
+function computeTravelKm(){
+  const latH = parseFloat(document.getElementById('latHome')?.value || document.getElementById('lat')?.value || 0);
+  const lonH = parseFloat(document.getElementById('lonHome')?.value || document.getElementById('lon')?.value || 0);
+  const latA = parseFloat(document.getElementById('latAway')?.value || document.getElementById('lat')?.value || 0);
+  const lonA = parseFloat(document.getElementById('lonAway')?.value || document.getElementById('lon')?.value || 0);
+  if(!latH || !lonH || !latA || !lonA) return 0;
+  const R = 6371;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(latA - latH), dLon = toRad(lonA - lonH);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(latH))*Math.cos(toRad(latA))*Math.sin(dLon/2)**2;
+  const km = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+  const el = document.getElementById('travelKm'); if(el) el.value = km;
+  return km;
+}
+
+// --- Compute Attack & Defense indices (sharpened)
+function computeAttackIndex(xg, sot, conv, poss, absMf=0, absFw=0, big=0, miss=0){
+  const base = 0.35 * xg + 0.25 * (sot / 5) + 0.15 * (conv * 100) + 0.08 * Math.min(1, big / 4);
+  const missPenalty = 0.05 * (miss / 3);
+  const mfPenalty = 1 - 0.03 * absMf;
+  const fwPenalty = 1 - 0.05 * absFw;
+  const possFactor = clamp(1 + (poss - 50) / 120, 0.82, 1.18);
+  return Math.max(0.05, (base - missPenalty) * possFactor * mfPenalty * fwPenalty);
+}
+function computeDefenseIndex(cs, gc, saves, ti, err, absDf=0){
+  const errPerGame = err / 38.0;
+  const savesFactor = Math.log(1 + Math.max(0, saves)) / Math.log(1+6);
+  let val = 1.0 + (-0.22 * gc) + (0.28 * cs) + 0.06 * savesFactor - 0.02 * (ti / 30) + 0.03 * errPerGame;
+  const dfPenalty = 1 + (0.04 * absDf);
+  return clamp(val * dfPenalty, 0.25, 3.2);
+}
+
+// --- Bivariate sampling using shared component (rho)
+function sampleBivariate(lambdaH, lambdaA, rho){
+  const shared = Math.max(0, Math.min(lambdaH, lambdaA) * Math.max(0, Math.min(1, rho)));
+  const hPart = Math.max(0, lambdaH - shared);
+  const aPart = Math.max(0, lambdaA - shared);
+  const sh = poisson(shared);
+  return [sh + poisson(hPart), sh + poisson(aPart)];
+}
+
+// --- Draw histogram (totals map)
+function drawHistogram(totals){
+  const c = document.getElementById('hist'); if(!c) return;
+  const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle = '#071012'; ctx.fillRect(0,0,c.width,c.height);
+  const keys = Object.keys(totals).map(k=>parseInt(k)).sort((a,b)=>a-b);
+  if(keys.length===0) return;
+  const maxV = Math.max(...keys.map(k=>totals[k]||0),1);
+  const left = 18, right = c.width - 18, w = (right - left) / Math.max(1, keys.length);
+  keys.forEach((k,i)=>{
+    const v = totals[k]||0;
+    const h = (v / maxV) * (c.height - 28);
+    ctx.fillStyle = '#0b74de';
+    ctx.fillRect(left + i*w, c.height - 12 - h, w * 0.78, h);
+    ctx.fillStyle = '#9fd6ee';
+    ctx.font = '10px Arial';
+    ctx.fillText(String(k), left + i*w + 2, c.height - 2);
+  });
+}
+
+// --- sanitize filename
+function sanitize(s){ return (s||'match').toString().replace(/[^\w\-. ]+/g,'').replace(/\s+/g,'_'); }
+
+// --- download CSV helper
+function downloadCSV(obj, filename){
+  const header = Object.keys(obj).join(',');
+  const row = Object.keys(obj).map(k=>`"${String(obj[k]).replace(/"/g,'""')}"`).join(',');
+  const csv = header + '\n' + row;
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename + '.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+// --- small UI helpers
+function flash(id){ const el=document.getElementById(id); if(!el) return; el.classList.add('btn-working'); setTimeout(()=>el.classList.remove('btn-working'),700); }
+
+// --- ensure saveLog exists
+ensureEl('saveLog', 'div', document.querySelector('.container') || document.body, 'small-log');
+
+// === Bind action buttons that were created in Parts 1-3 ===
+document.getElementById('btnAutoTI')?.addEventListener('click', ()=>{ autoTI(); document.getElementById('tiStatus')?.classList.add('show'); setTimeout(()=>document.getElementById('tiStatus')?.classList.remove('show'),2000); });
+document.getElementById('btnAutoCR')?.addEventListener('click', ()=>{ autoCR(); });
+document.getElementById('btnFindCoord')?.addEventListener('click', ()=>{ findCoords(); });
+document.getElementById('btnCalcTI')?.addEventListener('click', ()=>{ autoTI(); });
+document.getElementById('btnExample')?.addEventListener('click', ()=>{ 
+  // keep example filler minimal but complete
+  document.getElementById('teamHome').value = 'Man City';
+  document.getElementById('teamAway').value = 'Tottenham';
+  document.getElementById('xgHome').value = 2.1; document.getElementById('xgAway').value = 1.4;
+  document.getElementById('sotHome').value = 6; document.getElementById('sotAway').value = 4;
+  document.getElementById('goalsHome').value = 8; document.getElementById('goalsAway').value = 6;
+  document.getElementById('convHome').value = ''; document.getElementById('convAway').value = '';
+  document.getElementById('tackleHome').value = 22; document.getElementById('interHome').value = 9;
+  document.getElementById('tackleAway').value = 17; document.getElementById('interAway').value = 7;
+  autoTI(); autoCR();
+  document.getElementById('csHome').value = 0.48; document.getElementById('csAway').value = 0.30;
+  document.getElementById('gcHome').value = 0.8; document.getElementById('gcAway').value = 1.3;
+  document.getElementById('saveHome').value = 3.6; document.getElementById('saveAway').value = 3.2;
+  document.getElementById('errHome').value = 5; document.getElementById('errAway').value = 9;
+  document.getElementById('hdpHomeOpen').value = 1.95; document.getElementById('hdpHomeNow').value = 1.88;
+  document.getElementById('hdpAwayOpen').value = 1.95; document.getElementById('hdpAwayNow').value = 2.05;
+  document.getElementById('ouOverOpen').value = 1.95; document.getElementById('ouOverNow').value = 1.88;
+  document.getElementById('ouUnderOpen').value = 1.90; document.getElementById('ouUnderNow').value = 2.00;
+  document.getElementById('eloHome').value = 1820; document.getElementById('eloAway').value = 1690;
+  document.getElementById('stadiumName').value = 'Etihad Stadium';
+  document.getElementById('lat').value = '53.4831'; document.getElementById('lon').value = '-2.2004';
+  document.getElementById('travelKm').value = 12; document.getElementById('dayRest') && (document.getElementById('dayRest').value = 4);
+  document.getElementById('mcRuns') && (document.getElementById('mcRuns').value = 8000);
+  alert('Contoh terisi. Klik Analisis untuk menjalankan simulasi.');
+});
+
+// --- Main Analyze (MC, HDP/OU, recommendations, CSV export)
+document.getElementById('btnAnalyze')?.addEventListener('click', async function(){
+  flash('btnAnalyze');
+  try{
+    // create useful fallbacks for day rest / rho
+    const daysRestHome = ('daysRestHome' in document) ? safe(document.getElementById('daysRestHome')?.value, safe(document.getElementById('dayRest')?.value, 4)) : safe(document.getElementById('dayRest')?.value, 4);
+    const daysRestAway = ('daysRestAway' in document) ? safe(document.getElementById('daysRestAway')?.value, safe(document.getElementById('dayRest')?.value, 3)) : safe(document.getElementById('dayRest')?.value, 3);
+    const rho = clamp(safe(document.getElementById('rho')?.value, 0.12), 0, 0.5);
+
+    // collect inputs with safe fallback for each missing field
+    const teamH = (document.getElementById('teamHome')?.value || 'Home');
+    const teamA = (document.getElementById('teamAway')?.value || 'Away');
+    const xgH = safe(document.getElementById('xgHome')?.value, 1.2);
+    const xgA = safe(document.getElementById('xgAway')?.value, 1.0);
+    const sotH = safe(document.getElementById('sotHome')?.value, 4);
+    const sotA = safe(document.getElementById('sotAway')?.value, 3);
+    const convH = (document.getElementById('convHome')?.value !== '') ? safe(document.getElementById('convHome')?.value, 0.12) : ( safe(document.getElementById('goalsHome')?.value,0) / Math.max(1,sotH) );
+    const convA = (document.getElementById('convAway')?.value !== '') ? safe(document.getElementById('convAway')?.value, 0.11) : ( safe(document.getElementById('goalsAway')?.value,0) / Math.max(1,sotA) );
+
+    const bigH = safe(document.getElementById('bigHome')?.value, 0), missH = safe(document.getElementById('missHome')?.value, 0);
+    const bigA = safe(document.getElementById('bigAway')?.value, 0), missA = safe(document.getElementById('missAway')?.value, 0);
+    const possH = safe(document.getElementById('possHome')?.value, 50), possA = safe(document.getElementById('possAway')?.value, 50);
+
+    const tackleH = safe(document.getElementById('tackleHome')?.value, 0), interH = safe(document.getElementById('interHome')?.value, 0);
+    const tackleA = safe(document.getElementById('tackleAway')?.value, 0), interA = safe(document.getElementById('interAway')?.value, 0);
+    const tiH = safe(document.getElementById('tiHome')?.value, (tackleH + interH)), tiA = safe(document.getElementById('tiAway')?.value, (tackleA + interA));
+
+    const csH = safe(document.getElementById('csHome')?.value, 0.28), csA = safe(document.getElementById('csAway')?.value, 0.22);
+    const gcH = safe(document.getElementById('gcHome')?.value, 1.1), gcA = safe(document.getElementById('gcAway')?.value, 1.3);
+    const saveH = safe(document.getElementById('saveHome')?.value, 3.4), saveA = safe(document.getElementById('saveAway')?.value, 3.2);
+    const errH = safe(document.getElementById('errHome')?.value, 6), errA = safe(document.getElementById('errAway')?.value, 7);
+
+    const absDfH = Math.max(0, safe(document.getElementById('absDfHome')?.value, 0)), absMfH = Math.max(0, safe(document.getElementById('absMfHome')?.value, 0)), absFwH = Math.max(0, safe(document.getElementById('absFwHome')?.value, 0));
+    const absDfA = Math.max(0, safe(document.getElementById('absDfAway')?.value, 0)), absMfA = Math.max(0, safe(document.getElementById('absMfAway')?.value, 0)), absFwA = Math.max(0, safe(document.getElementById('absFwAway')?.value, 0));
+
+    const eloH = safe(document.getElementById('eloHome')?.value, 1500), eloA = safe(document.getElementById('eloAway')?.value, 1500);
+    const mcRuns = Math.max(2000, safe(document.getElementById('mcRuns')?.value, 8000));
+
+    // compute travel/stamina
+    const travelKm = computeTravelKm();
+    const stamH = clamp(1 - Math.max(0, (3 - daysRestHome()) ) * 0.035 - Math.max(0, (travelKm - 200)) * 0.00016, 0.65, 1.06);
+    const stamA = clamp(1 - Math.max(0, (3 - daysRestAway()) ) * 0.035 - Math.max(0, (travelKm - 200)) * 0.00016, 0.65, 1.06);
+
+    // short helpers to accept either field
+    function daysRestHome(){ return (document.getElementById('daysRestHome') ? safe(document.getElementById('daysRestHome').value, safe(document.getElementById('dayRest')?.value, 4)) : safe(document.getElementById('dayRest')?.value, 4)); }
+    function daysRestAway(){ return (document.getElementById('daysRestAway') ? safe(document.getElementById('daysRestAway').value, safe(document.getElementById('dayRest')?.value, 3)) : safe(document.getElementById('dayRest')?.value, 3)); }
+
+    // compute indices
+    const atkH = computeAttackIndex(xgH, sotH, convH, possH, absMfH, absFwH, bigH, missH);
+    const atkA = computeAttackIndex(xgA, sotA, convA, possA, absMfA, absFwA, bigA, missA);
+    const defH = computeDefenseIndex(csH, gcH, saveH, tiH, errH, absDfH);
+    const defA = computeDefenseIndex(csA, gcA, saveA, tiA, errA, absDfA);
+
+    // ELO scale
+    const sfH = clamp(1 + (eloH - eloA) / 1400, 0.75, 1.25);
+    const sfA = clamp(1 + (eloA - eloH) / 1400, 0.75, 1.25);
+
+    // base lambda formula
+    let lambdaH = Math.max(0.02, 1.02 * (atkH / Math.max(0.3, defA)) * sfH * stamH);
+    let lambdaA = Math.max(0.02, 0.98 * (atkA / Math.max(0.3, defH)) * sfA * stamA);
+
+    // shrink toward xG baseline to reduce extremes
+    lambdaH = 0.55 * lambdaH + 0.45 * xgH;
+    lambdaA = 0.55 * lambdaA + 0.45 * xgA;
+
+    // Monte Carlo simulation
+    const scoreFreq = {}; const totals = {}; let homeWins=0, draws=0, awayWins=0;
+    for(let i=0;i<mcRuns;i++){
+      const [gh, ga] = sampleBivariate(lambdaH, lambdaA, rho);
+      scoreFreq[`${gh}-${ga}`] = (scoreFreq[`${gh}-${ga}`] || 0) + 1;
+      totals[gh+ga] = (totals[gh+ga] || 0) + 1;
+      if(gh>ga) homeWins++; else if(gh===ga) draws++; else awayWins++;
+    }
+
+    const pHome = homeWins / mcRuns, pDraw = draws / mcRuns, pAway = awayWins / mcRuns;
+    const avgH = Object.entries(scoreFreq).reduce((s,[sc,v])=> s + parseInt(sc.split('-')[0]) * v, 0) / mcRuns;
+    const avgA = Object.entries(scoreFreq).reduce((s,[sc,v])=> s + parseInt(sc.split('-')[1]) * v, 0) / mcRuns;
+
+    // OU prob
+    const ouLine = safe(document.getElementById('ouLine')?.value, 2.5);
+    let over = 0, totalAll = 0;
+    for(const t in totals){ totalAll += totals[t]; if(parseInt(t) > ouLine) over += totals[t]; }
+    const overProb = totalAll ? over / totalAll : 0;
+
+    // HDP cover prob (home)
+    const hdpLine = safe(document.getElementById('hdpLine')?.value, 0.25);
+    let cover=0, push=0;
+    for(const sc in scoreFreq){
+      const v = scoreFreq[sc]; const parts = sc.split('-'); const gh = parseInt(parts[0]), ga = parseInt(parts[1]);
+      const diff = gh - ga - hdpLine;
+      if(diff > 0) cover += v; else if(Math.abs(diff) < 1e-9) push += v;
+    }
+    const coverHome = (cover + 0.5 * push) / mcRuns;
+
+    // implied probs from current odds (if provided)
+    const impliedOver = safe(document.getElementById('ouOverNow')?.value, NaN) > 0 ? 1 / safe(document.getElementById('ouOverNow').value) : null;
+    const impliedUnder = safe(document.getElementById('ouUnderNow')?.value, NaN) > 0 ? 1 / safe(document.getElementById('ouUnderNow').value) : null;
+    const impliedHdpHome = safe(document.getElementById('hdpHomeNow')?.value, NaN) > 0 ? 1 / safe(document.getElementById('hdpHomeNow').value) : null;
+    const impliedHdpAway = safe(document.getElementById('hdpAwayNow')?.value, NaN) > 0 ? 1 / safe(document.getElementById('hdpAwayNow').value) : null;
+
+    const edgeOver = impliedOver ? (overProb - impliedOver) : null;
+    const edgeUnder = impliedUnder ? ((1 - overProb) - impliedUnder) : null;
+    const edgeHdpHome = impliedHdpHome ? (coverHome - impliedHdpHome) : null;
+    const edgeHdpAway = impliedHdpAway ? ((1 - coverHome) - impliedHdpAway) : null;
+
+    // candidates scoring and ranking
+    const candidates = [
+      {tag:`OU Over ${ouLine}`, prob: overProb, edge: edgeOver, market:'OU', open: safe(document.getElementById('ouOverOpen')?.value, NaN), now: safe(document.getElementById('ouOverNow')?.value, NaN)},
+      {tag:`OU Under ${ouLine}`, prob: (1 - overProb), edge: edgeUnder, market:'OU', open: safe(document.getElementById('ouUnderOpen')?.value, NaN), now: safe(document.getElementById('ouUnderNow')?.value, NaN)},
+      {tag:`HDP Home ${hdpLine}`, prob: coverHome, edge: edgeHdpHome, market:'HDP', open: safe(document.getElementById('hdpHomeOpen')?.value, NaN), now: safe(document.getElementById('hdpHomeNow')?.value, NaN)},
+      {tag:`HDP Away ${-hdpLine}`, prob: (1 - coverHome), edge: edgeHdpAway, market:'HDP', open: safe(document.getElementById('hdpAwayOpen')?.value, NaN), now: safe(document.getElementById('hdpAwayNow')?.value, NaN)}
+    ];
+    candidates.forEach(c=>{
+      c.edgeShr = (c.edge===null) ? null : Math.sign(c.edge) * Math.min(Math.abs(c.edge), 0.22);
+      const delta = (c.open && c.now) ? Math.abs((c.now - c.open)/Math.max(0.01, c.open)) : 0;
+      const shrink = 1 - Math.min(0.7, delta * 0.5);
+      c.score = ((c.prob * 0.65) + ((c.edgeShr||0) * 0.35)) * shrink;
+    });
+    candidates.sort((a,b)=>b.score - a.score);
+    const best2 = candidates.slice(0,2);
+
+    // confidence calculation
+    let meanTot = 0, cntTot = 0;
+    for(const t in totals){ meanTot += parseInt(t) * totals[t]; cntTot += totals[t]; }
+    meanTot = cntTot ? meanTot / cntTot : 0;
+    let varv = 0; for(const t in totals){ varv += ((parseInt(t) - meanTot)**2) * totals[t]; } varv = cntTot ? varv / cntTot : 0;
+    let confidence = clamp(1 - Math.min(1, varv / 8), 0.12, 0.98);
+    // penalty for strong market moves
+    const deltaOUperc = (document.getElementById('ouOverOpen')?.value && document.getElementById('ouOverNow')?.value) ? Math.abs((safe(document.getElementById('ouOverNow').value) - safe(document.getElementById('ouOverOpen').value)) / Math.max(0.01, safe(document.getElementById('ouOverOpen').value))) * 100 : 0;
+    if(deltaOUperc >= 15) confidence *= 0.78;
+    const confLabel = confidence > 0.85 ? 'High' : (confidence > 0.6 ? 'Medium' : 'Low');
+
+    // render summary & UI
+    document.getElementById('matchTitle') && (document.getElementById('matchTitle').textContent = `${teamH} vs ${teamA}`);
+    document.getElementById('matchMeta') && (document.getElementById('matchMeta').textContent = `${document.getElementById('stadiumName')?.value||''} • ${document.getElementById('countryName')?.value||''}`);
+    const summaryLines = [
+      `λ (model): H ${lambdaH.toFixed(2)} | A ${lambdaA.toFixed(2)}`,
+      `Exp Goals (sim): H ${avgH.toFixed(2)} | A ${avgA.toFixed(2)}`,
+      `1X2 — Home ${percent(pHome)} Draw ${percent(pDraw)} Away ${percent(pAway)}`,
+      `OU (${ouLine}) → Over ${percent(overProb)}`,
+      `HDP (${hdpLine}) → Home cover ${percent(coverHome)}`,
+      `AtkIdx H:${atkH.toFixed(2)} A:${atkA.toFixed(2)} • DefIdx H:${defH.toFixed(2)} A:${defA.toFixed(2)}`,
+      `Absence H: DF ${absDfH} MF ${absMfH} FW ${absFwH} • A: DF ${absDfA} MF ${absMfA} FW ${absFwA}`,
+      `Travel: ${travelKm} km • Days rest H:${daysRestHome()} A:${daysRestAway()}`,
+      `Confidence: ${confLabel} (${(confidence*100).toFixed(1)}%)`
+    ];
+    document.getElementById('summary') && (document.getElementById('summary').textContent = summaryLines.join('\n'));
+
+    // recommendations
+    const recEl = document.getElementById('bestRec'); if(recEl){ recEl.innerHTML = ''; best2.forEach(b=>{ const d=document.createElement('div'); d.className='card'; d.style.marginBottom='8px'; d.innerHTML = `<strong>${b.tag}</strong><div class="kv">Prob: ${percent(b.prob)} • Edge: ${b.edgeShr!==null? ((b.edgeShr*100).toFixed(2)+'%') : 'N/A'}</div>`; recEl.appendChild(d); }); }
+
+    // histogram
+    drawHistogram(totals);
+
+    // trap table render
+    const tbody = document.querySelector('#trapTable'); if(tbody){ tbody.innerHTML = '<tr><th>Pasar</th><th>Open</th><th>Now</th><th>Δ%</th><th>Arah</th><th>Prob Model</th><th>Edge%</th><th>Status</th></tr>'; }
+    candidates.forEach(c=>{
+      const deltaPerc = (c.open && c.now) ? ((c.now - c.open)/Math.max(0.01,c.open)*100).toFixed(1) + '%' : '—';
+      let status = 'Stable'; if(Math.abs(parseFloat(deltaPerc)) >= 15) status = 'TRAP'; else if(Math.abs(parseFloat(deltaPerc)) >= 5) status = 'Warning';
+      if(tbody){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.tag}</td><td>${c.open||''}</td><td>${c.now||''}</td><td>${deltaPerc}</td><td>${c.market}</td><td>${percent(c.prob)}</td><td>${c.edgeShr!==null? ((c.edgeShr*100).toFixed(2)+'%') : '-'}</td><td>${status}</td>`;
+        tbody.appendChild(tr);
+      }
+    });
+
+    // confidence bar
+    const bar = document.getElementById('confidenceBar'), label = document.getElementById('confidenceLabel');
+    if(bar){ bar.style.width = `${Math.round(confidence * 100)}%`; } if(label){ label.textContent = `${Math.round(confidence * 100)}%`; }
+
+    // save payload & auto-download CSV (detailed fields)
+    const payload = {
+      date: nowDate(), league: document.getElementById('league')?.value||'', home: teamH, away: teamA,
+      stadiumHome: document.getElementById('stadiumName')?.value||'', stadiumAway: document.getElementById('stadiumName')?.value||'',
+      lambdaH: lambdaH.toFixed(3), lambdaA: lambdaA.toFixed(3), expH: avgH.toFixed(3), expA: avgA.toFixed(3),
+      pHome: pHome.toFixed(4), pDraw: pDraw.toFixed(4), pAway: pAway.toFixed(4),
+      overProb: overProb.toFixed(4), coverHome: coverHome.toFixed(4), confidence: confidence.toFixed(3), confidenceLabel: confLabel,
+      atkH: atkH.toFixed(3), atkA: atkA.toFixed(3), defH: defH.toFixed(3), defA: defA.toFixed(3),
+      absHome: `DF:${absDfH}|MF:${absMfH}|FW:${absFwH}`, absAway: `DF:${absDfA}|MF:${absMfA}|FW:${absFwA}`
+    };
+    sessionStorage.setItem('v55_last', JSON.stringify(payload));
+    const filename = `Prediction_${sanitize(teamH)}_vs_${sanitize(teamA)}_${payload.date}`;
+    downloadCSV(payload, filename);
+    document.getElementById('saveLog').textContent = `✅ Analisis selesai & CSV diunduh: ${filename}.csv`;
+    // update badge if exists
+    const confBadge = document.getElementById('confBadge'); if(confBadge) confBadge.textContent = `Conf: ${confLabel} ${(confidence*100).toFixed(0)}%`;
+  }catch(err){
+    console.error(err); alert('Error saat analisis: ' + (err && err.message ? err.message : String(err)));
+  }
+}); // end analyze
+
+// --- Download last saved CSV
+document.getElementById('btnDownloadLast')?.addEventListener('click', ()=>{
+  const d = sessionStorage.getItem('v55_last'); if(!d) return alert('Belum ada analisis tersimpan.'); const obj = JSON.parse(d); const fn = `Prediction_${sanitize(obj.home)}_vs_${sanitize(obj.away)}_${obj.date}`; downloadCSV(obj, fn);
+});
+
+// --- Detect traps button (quick re-check using open/now fields)
+document.getElementById('btnDetectTrap')?.addEventListener('click', ()=>{
+  flash('btnDetectTrap');
+  // reuse existing code path by running small metric checks and updating trap table
+  const ouOverOpen = safe(document.getElementById('ouOverOpen')?.value, NaN), ouOverNow = safe(document.getElementById('ouOverNow')?.value, NaN);
+  const hdpHomeOpen = safe(document.getElementById('hdpHomeOpen')?.value, NaN), hdpHomeNow = safe(document.getElementById('hdpHomeNow')?.value, NaN);
+  const deltaOU = (ouOverOpen && ouOverNow) ? ((ouOverNow - ouOverOpen)/Math.max(0.01,ouOverOpen)*100).toFixed(1) : null;
+  const deltaH = (hdpHomeOpen && hdpHomeNow) ? ((hdpHomeNow - hdpHomeOpen)/Math.max(0.01,hdpHomeOpen)*100).toFixed(1) : null;
+  document.getElementById('deltaInfo') && (document.getElementById('deltaInfo').textContent = `Δ OU: ${deltaOU===null? '—': deltaOU+'%'} • Δ HDP: ${deltaH===null? '—': deltaH+'%'}`);
+  // simple trap logic shown to user
+  const trapResult = document.getElementById('trapResult'); if(trapResult){
+    const severe = (Math.abs(deltaOU||0) >= 15) || (Math.abs(deltaH||0) >= 15);
+    const warning = (Math.abs(deltaOU||0) >= 5) || (Math.abs(deltaH||0) >= 5);
+    trapResult.textContent = severe? 'TRAP detected' : (warning? 'Warning: market moving' : 'Stable');
+    trapResult.className = severe? 'status-red' : (warning? 'status-yellow' : 'status-green');
+  }
+});
+
+// initial wiring: autoTI on field change
+['tackleHome','interHome','tackleAway','interAway'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input', autoTI); });
+['goalsHome','goalsAway','sotHome','sotAway'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{/* no spam */}); });
+
+// initial UI state
+document.getElementById('confidenceBar') && (document.getElementById('confidenceBar').style.width = '0%');
+document.getElementById('confidenceLabel') && (document.getElementById('confidenceLabel').textContent = '0%');
+
+</script>
+</body>
+</html>
